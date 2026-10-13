@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이거 나만 불편해? · 투표하러 가기</title>
+<meta name="description" content="친구가 보낸 안건에 투표해 보세요. 나만 불편한 건지, 바로 확인!">
+<meta property="og:title" content="이거 나만 불편해? — 너라면 어디에 투표할래?">
+<meta property="og:description" content="친구가 보낸 안건에 투표하고 다수파인지 소수파인지 확인해 보세요.">
+<meta property="og:image" content="https://www.morulabs.co.kr/assets/app-icon.png">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/style.css">
+<style>
+.share{max-width:440px;margin:0 auto;padding:40px 16px 24px;text-align:center}
+.share img.icon{width:72px;height:72px;border-radius:18px}
+.qcard{background:var(--card);border-radius:20px;padding:22px;margin:20px 0;text-align:left}
+.qcard .cat{font-size:12px;font-weight:800;color:var(--accent)}
+.qcard h1{font-size:22px;line-height:1.4;margin:6px 0 12px;color:var(--ink);letter-spacing:-.02em}
+.qcard ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.qcard li{border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:700;color:var(--ink);font-size:14px}
+.qcard .meta{font-size:12px;color:var(--muted);margin-top:10px}
+.share .btn{display:block;width:100%;margin-top:10px;padding:14px;font-size:15px;text-align:center}
+.share .small{font-size:12.5px;color:var(--muted);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="share">
+  <img class="icon" src="/assets/app-icon.png" alt="이거 나만 불편해? 앱 아이콘">
+  <div class="qcard" id="q">
+    <div class="cat">이거 나만 불편해?</div>
+    <h1 id="title">친구가 보낸 안건을 불러오는 중…</h1>
+    <ul id="opts"></ul>
+    <div class="meta" id="meta"></div>
+  </div>
+  <a class="btn primary" id="open" href="#">앱에서 투표하기</a>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=kr.nanman.app">Google Play에서 받기</a>
+  <a class="btn" href="https://apps.apple.com/kr/search?term=%EC%9D%B4%EA%B1%B0%20%EB%82%98%EB%A7%8C%20%EB%B6%88%ED%8E%B8%ED%95%B4">App Store에서 받기</a>
+  <p class="small">앱이 설치돼 있으면 '앱에서 투표하기'를 누르면 바로 열려요.<br>결과는 투표한 뒤에 공개돼요.</p>
+  <p class="small"><a href="/">모루랩스</a></p>
+</div>
+<script>
+(function(){
+  var id = (new URLSearchParams(location.search).get('id') || '').replace(/\D/g, '');
+  var appUrl = id ? 'nanman://poll/' + id : 'nanman://';
+  document.getElementById('open').href = appUrl;
+  if (!id) { document.getElementById('title').textContent = '이거 나만 불편해? — 일상의 애매한 상황, 투표로 물어보세요'; return; }
+  // 안건 제목·선택지 미리보기 (공개 키로 읽기 전용 조회, 결과 수치는 보여주지 않음)
+  fetch('https://cypmztnevwqfqadsebds.supabase.co/rest/v1/rpc/polls_by_ids', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: 'sb_publishable_PD-5QnWBTqpMAFQYOrrMqQ_YQkUfPQ4' },
+    body: JSON.stringify({ p_ids: [Number(id)] })
+  }).then(function(r){ return r.json(); }).then(function(rows){
+    var p = rows && rows[0];
+    if (!p) { document.getElementById('title').textContent = '마감되었거나 볼 수 없는 안건이에요'; return; }
+    document.title = p.title + ' · 이거 나만 불편해?';
+    document.getElementById('title').textContent = p.title;
+    var ul = document.getElementById('opts');
+    (p.options || []).forEach(function(o){
+      var li = document.createElement('li');
+      li.textContent = (p.vote_type === 'scale5' ? o.position + '점 · ' : '') + o.label;
+      ul.appendChild(li);
+    });
+    document.getElementById('meta').textContent = p.category_name + ' · ' + p.participants + '명 참여 중';
+  }).catch(function(){});
+  // 휴대폰이면 바로 앱 열기 시도
+  if (/Android|iPhone|iPad/i.test(navigator.userAgent)) { setTimeout(function(){ location.href = appUrl; }, 300); }
+})();
+</script>
+</body>
+</html>
