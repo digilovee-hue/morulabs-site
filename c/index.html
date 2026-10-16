@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script>
+// 판결 받기 링크: 웹 버전에서 바로 내 주장 쓰기 화면을 엶 (미리보기용 정보는 아래 meta에 그대로 둠)
+(function(){ var t = (new URLSearchParams(location.search).get('t') || '').replace(/[^a-fA-F0-9]/g, ''); location.replace('/app/' + (t ? '?case=' + t : '')); })();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚖️ 판결 신청이 왔어요 · 이거 나만 불편해?</title>
+<meta name="description" content="둘 중 누구 말이 맞을까? 네 주장을 쓰면 사람들이 판결해 줘요.">
+<meta property="og:title" content="⚖️ 판결 신청이 왔어요">
+<meta property="og:description" content="둘 중 누구 말이 맞을까? 네 주장을 쓰면 사람들이 판결해 줘요. (설치 없이 가능)">
+<meta property="og:image" content="https://www.morulabs.co.kr/assets/app-icon.png">
+<link rel="icon" href="/favicon.png">
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:60px 16px">
+<p>판결 화면으로 이동하는 중…</p>
+<p><a href="/app/">바로 가기</a></p>
+</body>
+</html>
