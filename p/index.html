@@ -2,11 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>
+// 공유 링크로 들어오면 웹 버전에서 그 글을 바로 열어 투표하게 함 (미리보기용 정보는 아래 meta에 그대로 둠)
+(function(){ var id = (new URLSearchParams(location.search).get('id') || '').replace(/\D/g, ''); location.replace('/app/' + (id ? '?poll=' + id : '')); })();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>이거 나만 불편해? · 투표하러 가기</title>
-<meta name="description" content="친구가 보낸 안건에 투표해 보세요. 나만 불편한 건지, 바로 확인!">
-<meta property="og:title" content="이거 나만 불편해? — 너라면 어디에 투표할래?">
-<meta property="og:description" content="친구가 보낸 안건에 투표하고 다수파인지 소수파인지 확인해 보세요.">
+<meta name="description" content="친구가 보낸 글에 투표해 보세요. 나만 불편한 건지, 바로 확인!">
+<meta property="og:title" content="⚖️ 이거 나만 불편해? — 너라면 어디에 투표할래?">
+<meta property="og:description" content="친구가 보낸 글이에요. 눌러서 바로 투표하고, 사람들 생각을 확인해 보세요. (설치 없이 가능)">
 <meta property="og:image" content="https://www.morulabs.co.kr/assets/app-icon.png">
 <link rel="icon" href="/favicon.png">
 <link rel="stylesheet" href="/style.css">
@@ -28,7 +32,7 @@
   <img class="icon" src="/assets/app-icon.png" alt="이거 나만 불편해? 앱 아이콘">
   <div class="qcard" id="q">
     <div class="cat">이거 나만 불편해?</div>
-    <h1 id="title">친구가 보낸 안건을 불러오는 중…</h1>
+    <h1 id="title">친구가 보낸 글을 불러오는 중…</h1>
     <ul id="opts"></ul>
     <div class="meta" id="meta"></div>
   </div>
@@ -44,14 +48,14 @@
   var appUrl = id ? 'nanman://poll/' + id : 'nanman://';
   document.getElementById('open').href = appUrl;
   if (!id) { document.getElementById('title').textContent = '이거 나만 불편해? — 일상의 애매한 상황, 투표로 물어보세요'; return; }
-  // 안건 제목·선택지 미리보기 (공개 키로 읽기 전용 조회, 결과 수치는 보여주지 않음)
+  // 글 제목·선택지 미리보기 (공개 키로 읽기 전용 조회, 결과 수치는 보여주지 않음)
   fetch('https://cypmztnevwqfqadsebds.supabase.co/rest/v1/rpc/polls_by_ids', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: 'sb_publishable_PD-5QnWBTqpMAFQYOrrMqQ_YQkUfPQ4' },
     body: JSON.stringify({ p_ids: [Number(id)] })
   }).then(function(r){ return r.json(); }).then(function(rows){
     var p = rows && rows[0];
-    if (!p) { document.getElementById('title').textContent = '마감되었거나 볼 수 없는 안건이에요'; return; }
+    if (!p) { document.getElementById('title').textContent = '마감되었거나 볼 수 없는 글이에요'; return; }
     document.title = p.title + ' · 이거 나만 불편해?';
     document.getElementById('title').textContent = p.title;
     var ul = document.getElementById('opts');
