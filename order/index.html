@@ -114,6 +114,7 @@ function parseShare(t){
   const ce=url.match(/coupangeats\.com\S*[?&]storeId=(\d+)/);if(ce)url='ce:'+ce[1];
   const qm=t.match(/['‘’"“”]([^'‘’"“”]{1,40})['‘’"“”]/);
   if(qm)return{url,name:qm[1].trim()};
+  if(ce)return{url,name:''};
   let name=t.replace(/https?:\/\/\S+/g,'').replace(/\[[^\]]*\]/g,'').replace(/배달의\s*민족|배민|에서\s*주문해\s*보세요|추천합니다|공유/g,'').split(/\n/).map(s=>s.trim()).filter(Boolean)[0]||'';
   name=name.replace(/[“”"'!~]/g,'').trim();
   return{url,name};
@@ -180,7 +181,8 @@ function showCands(list,url,name){
   <input id="cq" data-key="${esc(key)}" placeholder="가게 이름 (예: 본도시락)"><div id="cqout"></div></div>`;setTimeout(()=>$('#cq')&&$('#cq').focus(),50);return}
   $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name)}</h2>
   <div class="meta">${url?'처음 보는 가게입니다':'링크 없이 이름으로 찾았습니다'}</div><div class="dash"></div>
-  <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}</div>`;
+  <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}
+  <div class="dash"></div><label class="l" for="cq">목록에 없으면 직접 찾기</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름"><div id="cqout"></div></div>`;
 }
 
 function renderSearch(){
