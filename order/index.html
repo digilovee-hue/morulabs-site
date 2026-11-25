@@ -1,83 +1,148 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="manifest" href="/order/manifest.webmanifest?v=4"><meta name="theme-color" content="#16171b"><link rel="icon" href="/order/oc3-icon-192.png"><title>주문 전에</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="/order/manifest.webmanifest?v=5"><meta name="theme-color" content="#16171b"><link rel="icon" href="/order/oc3-icon-192.png"><title>주문 전에</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* 이나불(이거 나만 불편해?) 구성 적용: 흰 바탕, Noto Sans KR 굵은 제목, 먹색 #16171b, 강조 빨강 #e8402f,
-   연회색 타일 #f3f4f6, 알약형(999px) 버튼·탭, 모바일 한 칸 컬럼 */
-:root{color-scheme:light;--bg:#fff;--tile:#f3f4f6;--paper:#f3f4f6;--ink:#16171b;--sub:#3a3d46;--mute:#5e6270;--line:#dadde3;--red:#e8402f;--pink:#ffe3de;--blue:#2f6fe8;--amber:#e8902f}
+:root{color-scheme:light;--bg:#fff;--tile:#f3f4f6;--ink:#16171b;--sub:#3a3d46;--mute:#5e6270;--line:#dadde3;--red:#e8402f;--pink:#ffe3de;--blue:#2f6fe8;--amber:#e8902f}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-x:clip}
-.wrap{max-width:480px;margin:0 auto;padding:18px 16px 80px}
-h1{font:900 26px/1.2 "Noto Sans KR",sans-serif;margin:6px 0 4px;letter-spacing:-.5px}
-h1 b{color:var(--red);font-weight:900}
-.sub{color:var(--mute);font-size:13px;margin:0 0 12px}
-.tabs{display:flex;gap:6px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-.tabs button{flex:1;min-height:40px;border:1px solid var(--line);background:#fff;color:var(--sub);font:700 14px "Noto Sans KR";border-radius:999px;cursor:pointer}
-.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-textarea,input,select{width:100%;font:16px "Noto Sans KR";padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--tile);color:var(--ink)}
-textarea{min-height:96px;resize:vertical}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",-apple-system,sans-serif;overflow-x:clip}
+.bh{font-family:"Black Han Sans","Noto Sans KR",sans-serif;font-weight:400}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 96px}
+.logo{font:400 30px/1.1 "Black Han Sans","Noto Sans KR",sans-serif;margin:6px 0 2px;letter-spacing:-.3px}.logo b{color:var(--red);font-weight:400}
+.sub{color:var(--mute);font-size:13px;margin:0 0 10px}
+h3{font:400 21px/1.2 "Black Han Sans","Noto Sans KR",sans-serif;margin:18px 0 6px}
+textarea,input{width:100%;font:16px "Noto Sans KR";padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--tile);color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
-.btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--ink);color:#fff;font:700 14px "Noto Sans KR";cursor:pointer}
-.btn.ghost{background:#fff;color:var(--sub);border:1px solid var(--line)}
-.btn.red{background:var(--red);color:#fff}.btn.blue{background:var(--blue);color:#fff}.btn.amber{background:var(--red);color:#fff}
+.btn{min-height:44px;padding:0 16px;border:0;border-radius:999px;background:var(--ink);color:#fff;font:700 14px "Noto Sans KR";cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--sub);border:1px solid var(--line)}.btn.red{background:var(--red)}.btn.wide{width:100%}
+.btn.big{min-height:52px;font-size:15px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
 .card{background:var(--tile);border-radius:16px;padding:18px;margin-top:14px;position:relative}
-.card h2{font:900 21px/1.25 "Noto Sans KR",sans-serif;margin:4px 0 2px;padding-right:90px;letter-spacing:-.3px}
+.card h2{font:900 21px/1.25 "Noto Sans KR";margin:4px 0 2px;padding-right:96px;letter-spacing:-.3px}
 .meta{font-size:13px;color:var(--mute)}
 .dash{border-top:1px solid var(--line);margin:14px 0}
-.stamp{position:absolute;top:14px;right:14px;border-radius:999px;padding:4px 12px;font:900 13px "Noto Sans KR";color:#fff;animation:st .3s ease-out}
-.stamp.c1{background:var(--amber)}.stamp.c2{background:var(--red)}.stamp.c3{background:#8f1d12}.stamp.avoid{background:var(--ink);box-shadow:inset 0 0 0 2px var(--red)}.stamp.fav{background:var(--blue)}
-@keyframes st{from{transform:scale(1.4);opacity:0}}
+.ex{display:inline-block;font:700 11px "Noto Sans KR";color:var(--red);border:1px solid var(--red);border-radius:999px;padding:0 7px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.stamp{position:absolute;top:14px;right:12px;font:400 16px/1 "Black Han Sans","Noto Sans KR";padding:7px 11px 6px;border:3px solid currentColor;border-radius:8px;transform:rotate(-7deg);background:rgba(255,255,255,.85);white-space:nowrap;animation:st .3s ease-out}
+.stamp.c1{color:var(--amber)}.stamp.c2{color:var(--red)}.stamp.c3{color:#8f1d12}.stamp.fav{color:var(--blue)}.stamp.next{color:var(--ink)}
+@keyframes st{from{transform:rotate(-7deg) scale(1.5);opacity:0}}
 @media(prefers-reduced-motion:reduce){.stamp{animation:none}}
 .cand{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .cand:last-child{border:0}.cand b{display:block;font-weight:700}.cand small{color:var(--mute);font-size:12px}
-.cand .pick{flex:none;font-size:12px;font-weight:700;color:#fff;background:var(--red);border-radius:999px;padding:5px 10px}
+.cand .pick{flex:none;font-size:12px;font-weight:700;color:#fff;background:var(--red);border-radius:999px;padding:5px 10px;white-space:nowrap}
 .who{background:var(--pink);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:10px;color:var(--sub)}
 .who ul{margin:6px 0 0;padding-left:18px}
-.rate{display:grid;grid-template-columns:6.5em minmax(0,1fr);align-items:center;gap:8px;margin:8px 0;font-size:14px;font-weight:700}
-.seg{display:flex;gap:6px}.seg button{flex:1;min-height:40px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;font:500 13px "Noto Sans KR";cursor:pointer}
+.rate{display:grid;grid-template-columns:5.6em minmax(0,1fr);align-items:center;gap:8px;margin:8px 0;font-size:14px;font-weight:700}
+.seg{display:flex;gap:5px}.seg button{flex:1;min-height:40px;padding:0 4px;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;font:500 clamp(11px,3.2vw,13px) "Noto Sans KR";cursor:pointer;white-space:nowrap}
 .seg button.on[data-v="1"]{background:var(--red);color:#fff;border-color:var(--red)}
 .seg button.on[data-v="2"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .seg button.on[data-v="3"]{background:var(--blue);color:#fff;border-color:var(--blue)}
 .seg button.on[data-v="0"]{background:var(--line)}
 label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
-.hist{font-size:13px;margin-top:8px}.hist div{padding:6px 0;border-bottom:1px solid var(--line)}
-.sect{font:900 17px "Noto Sans KR";margin:22px 0 4px;display:flex;align-items:center;gap:8px}
-.sect i{font-style:normal;font:500 12px "Noto Sans KR";color:var(--mute)}
+.hist{font-size:13px;margin-top:8px}.hist>div{padding:8px 0;border-bottom:1px solid var(--line)}
+.sect{font:400 18px "Black Han Sans","Noto Sans KR";margin:22px 0 4px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sect i{font:500 12px "Noto Sans KR";font-style:normal;color:var(--mute)}
 .empty{color:var(--mute);font-size:13px;padding:10px 0}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#fff;border-radius:999px;font:500 13px "Noto Sans KR";color:var(--sub);cursor:pointer}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#fff;border-radius:999px;font:500 13px "Noto Sans KR";color:var(--sub);cursor:pointer;white-space:nowrap}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:30}
 .toast.on{opacity:1}
+.note{font-size:11px;color:var(--mute);margin-top:24px}
 .phs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.phs img{width:64px;height:64px;object-fit:cover;border-radius:10px;cursor:pointer;background:var(--line)}
 .phbtn{display:inline-flex;align-items:center}
-.viewer{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}.viewer img{max-width:100%;max-height:78vh;border-radius:8px}
-.note{font-size:11px;color:var(--mute);margin-top:24px}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}.viewer img{max-width:100%;max-height:78vh;border-radius:8px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.half{min-height:230px;border-radius:20px;padding:18px 14px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;text-align:left;font-family:inherit}
+.half.w{background:#fff;border:2px solid var(--ink);color:var(--ink)}.half.r{background:var(--red);border:2px solid var(--red);color:#fff}
+.half big{font:400 clamp(26px,8vw,34px)/1.05 "Black Han Sans","Noto Sans KR";display:block;white-space:nowrap}
+.half small{font-size:13px;line-height:1.4;display:block;margin-top:8px}
+.half .go{font-size:13px;font-weight:700;white-space:nowrap}
+.how{background:var(--tile);border-radius:16px;padding:14px 16px;margin-top:14px;font-size:13px}
+.how b{font-size:14px}.how ol{margin:6px 0 0;padding-left:20px}
+details{margin-top:12px}summary{font-size:13px;color:var(--mute);cursor:pointer;white-space:nowrap}
+nav.bot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:6}
+nav.bot div{display:flex;max-width:480px;margin:0 auto}
+nav.bot button{flex:1;min-height:58px;border:0;background:none;font:500 13px "Noto Sans KR";color:var(--mute);white-space:nowrap;cursor:pointer}
+nav.bot button.on{color:var(--ink);font-weight:900}
+.back{background:none;border:0;font:500 14px "Noto Sans KR";color:var(--mute);padding:6px 0;cursor:pointer;white-space:nowrap}
+.next{display:grid;gap:8px;margin-top:8px}.next .btn{width:100%}
+.soon{font:700 11px "Noto Sans KR";background:var(--line);color:var(--sub);border-radius:999px;padding:1px 8px;margin-left:6px;white-space:nowrap;vertical-align:2px}
+.pub{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.bar{display:flex;height:34px;border-radius:999px;overflow:hidden;font:700 13px "Noto Sans KR";margin:8px 0 4px}
+.bar span{display:flex;align-items:center;padding:0 12px;white-space:nowrap}.bar .bd{background:var(--red);color:#fff}.bar .gd{background:var(--blue);color:#fff;justify-content:flex-end}.bar.zero span{background:var(--line);color:var(--sub)}
+.tops{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rv{background:var(--tile);border-radius:12px;padding:10px 12px;font-size:13px}
+.rv .h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:12px;color:var(--mute)}.rv .h span{white-space:nowrap}
+.rv .k{font-weight:700;white-space:nowrap}.rv .k.bd{color:var(--red)}.rv .k.gd{color:var(--blue)}
+.rv .rp{border-left:3px solid var(--ink);padding:4px 0 4px 8px;margin-top:8px;color:var(--sub)}
+.rvlist{display:grid;gap:8px;margin-top:8px}
+.ptabs{display:flex;gap:6px;margin-top:12px}.ptabs button{flex:1;min-height:36px;border:1px solid var(--line);background:#fff;border-radius:999px;font:700 13px "Noto Sans KR";color:var(--sub);white-space:nowrap;cursor:pointer}.ptabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.onb{position:fixed;inset:0;background:#fff;z-index:50;display:flex;flex-direction:column;max-width:480px;margin:0 auto;padding:24px 20px}
+.onb .pg{flex:1;display:flex;flex-direction:column;justify-content:center}
+.onb h4{font:400 26px/1.2 "Black Han Sans","Noto Sans KR";margin:18px 0 8px}
+.onb p{margin:0;color:var(--sub);font-size:15px}
+.mock{background:var(--tile);border-radius:20px;height:250px;position:relative;overflow:hidden}
+.dots{display:flex;gap:6px;justify-content:center;margin:14px 0}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--red)}
+.rank{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.rank .n{font:400 26px "Black Han Sans";width:28px;color:var(--blue)}
 </style></head><body>
 <div class="wrap">
-<h1>주문 전에<b>!</b></h1>
-<p class="sub">수원시 테스트판. 배민에서 공유한 글을 붙여넣으면 내 기록과 가게 정보를 보여줍니다</p>
-<div class="row" id="instbox" hidden style="margin:0 0 8px"><button class="btn red" id="inst">앱 설치하기</button><span class="hint" style="align-self:center">설치해야 배민 공유 목록에 나옵니다</span></div>
-<nav class="tabs"><button data-t="share" class="on">공유 확인</button><button data-t="search">가게 검색</button><button data-t="list">내 기록</button></nav>
 
-<section id="v-share">
-<label class="l" for="paste">배민 공유 내용 붙여넣기</label>
-<textarea id="paste" placeholder="배민이나 쿠팡이츠에서 공유한 내용"></textarea>
-<div class="row"><button class="btn" id="go">확인하기</button><button class="btn ghost" id="clr">지우기</button></div>
-
-<div id="out"></div>
+<section id="v-home">
+<div class="logo">주문 전에<b>!</b></div>
+<p class="sub">배달 가게, 나만의 기록장 (수원시 테스트판)</p>
+<div class="row" id="instbox" hidden style="margin:0 0 6px"><button class="btn red" id="inst">앱 설치하기</button><span class="hint" style="align-self:center">설치해야 공유 목록에 나옵니다</span></div>
+<div class="split">
+<button class="half w" data-go="before"><span><big>주문 전에</big><small>가게 찾고<br>내 기록 확인</small></span><span class="go">확인하기 →</span></button>
+<button class="half r" data-go="after"><span><big>주문 후에</big><small>빡친 가게도,<br>또 시킬 집도</small></span><span class="go">기록하기 →</span></button>
+</div>
+<div class="how"><b>배민, 쿠팡이츠에서 공유 한 번이면 끝</b>
+<ol><li>가게 화면 오른쪽 위 공유 버튼</li><li>목록에서 주문 전에 선택 (처음엔 모두 보기 안에 있어요)</li><li>등록 상호와 내 기록이 바로 뜸</li></ol></div>
+<details id="pastebox"><summary>공유 목록에 안 보이면 붙여넣기로 확인</summary>
+<textarea id="paste" placeholder="배민이나 쿠팡이츠에서 복사한 공유 내용" style="margin-top:8px"></textarea>
+<div class="row"><button class="btn" id="go">확인하기</button><button class="btn ghost" id="clr">지우기</button></div></details>
 </section>
 
-<section id="v-search" hidden>
-<div class="row" style="margin-top:0"><input id="q" placeholder="가게 이름 (예: 감자탕)" style="flex:2 1 200px"><select id="gu" style="flex:1 1 120px"><option value="">수원 전체</option><option>장안구</option><option>권선구</option><option>팔달구</option><option>영통구</option></select></div>
+<section id="v-before" hidden>
+<div class="logo">주문 전에<b>!</b></div>
+<p class="sub">시키기 전에 한 번 확인</p>
+<input id="qb" placeholder="가게 이름, 동, 도로명">
+<div id="bout"></div>
+<div id="bquick"></div>
+</section>
+
+<section id="v-after" hidden>
+<div class="logo">주문 후에<b>!</b></div>
+<p class="sub">어느 가게에 할 말 있음?</p>
+<input id="qa" placeholder="가게 이름, 동, 도로명">
+<div id="aout"></div>
+</section>
+
+<section id="v-store" hidden>
+<button class="back" id="back">← 뒤로</button>
 <div id="sout"></div>
 </section>
 
-<section id="v-list" hidden><div id="lout"></div></section>
+<section id="v-list" hidden>
+<div class="logo">내 기록</div>
+<p class="sub">이 폰에만 저장됩니다. 나만 보는 곳이라 마음껏 쓰세요</p>
+<div id="lout"></div>
+<div class="card"><b>기록 지키기</b>
+<p class="hint" style="margin-top:4px">브라우저 데이터를 지우면 기록도 사라집니다. 가끔 파일로 저장해 두세요</p>
+<div class="row"><button class="btn ghost" id="exp">기록 파일로 저장</button><label class="btn ghost phbtn">파일에서 불러오기<input type="file" id="imp" accept="application/json" hidden></label></div>
+<div class="row"><button class="btn ghost" data-soon="2">로그인하고 기록 지키기<span class="soon">준비 중</span></button></div>
+<div class="row"><button class="btn ghost" id="exdel">예시 지우기</button><button class="btn ghost" id="howto">사용법 다시 보기</button></div></div>
+</section>
 
-<p class="note" id="dnote">데이터 불러오는 중…</p>
+<section id="v-town" hidden>
+<div class="logo">동네</div>
+<p class="sub">우리 동네에서 추천 많이 받은 가게<span class="soon">5단계 준비 중</span></p>
+<div class="card" id="tout"></div>
+<p class="hint">지금은 예시 화면입니다. 공개 후기가 쌓이면 실제 순위로 바뀝니다. 비추천 순위는 만들지 않습니다</p>
+</section>
+
+<p class="note" id="dnote">데이터 불러오는 중</p>
 </div>
+<nav class="bot"><div><button data-nav="home" class="on">홈</button><button data-nav="before">가게 찾기</button><button data-nav="list">내 기록</button><button data-nav="town">동네</button></div></nav>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -87,30 +152,50 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let DB=[],BYID={},BYBLD={};
 let S={links:{},rates:{},lists:{}};
 try{const r=localStorage.getItem('sonjul.v1');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+Object.keys(S.lists).forEach(k=>{if(S.lists[k]==='avoid')S.lists[k]='next'});
 const save=()=>{try{localStorage.setItem('sonjul.v1',JSON.stringify(S))}catch(e){}};
-const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1900)};
 const TAGS=['옵션 장난','양 줄이기','가격 꼼수','누락','식어서 옴','늦은 배달','위생','불친절','리뷰이벤트 강요'];
 const OWN={'옵션 장난':'옵션 구성과 가격이 메뉴 설명과 달라 혼란스러웠습니다. 옵션 내용을 더 분명하게 표시해 주세요.','양 줄이기':'양이 가격에 비해 적다고 느꼈습니다. 구성 한번 점검 부탁드립니다.','가격 꼼수':'표시된 가격과 실제 결제 금액이 다르게 느껴졌습니다.','누락':'주문한 메뉴 일부가 빠져서 왔습니다. 포장 전에 한 번 더 확인 부탁드립니다.','식어서 옴':'음식이 식은 상태로 도착했습니다. 포장이나 출발 시간을 점검해 주세요.','늦은 배달':'안내된 시간보다 많이 늦게 도착했습니다.','위생':'위생이 걱정되는 부분이 있었습니다. 확인 부탁드립니다.','불친절':'응대 과정에서 불친절하다고 느꼈습니다.','리뷰이벤트 강요':'리뷰 이벤트 참여를 부담스럽게 요구받는 느낌이었습니다.'};
-const LBL={c1:'조심',c2:'쓰레기',c3:'개쓰레기',avoid:'조심(남의 평가)',fav:'또 시킴'};
-const PUB={c1:'주의 1단계',c2:'주의 2단계',c3:'주의 3단계',avoid:'주의',fav:'추천'};
+const LBL={c1:'조심',c2:'쓰레기',c3:'개쓰레기',fav:'또 시킴',next:'다음 주문에'};
+const MINE={c1:'내가 조심 딱지 붙인 가게',c2:'내가 쓰레기로 박제한 가게',c3:'내가 개쓰레기로 박제한 가게',fav:'또 시켜도 되는 가게',next:'다음에 시켜볼 가게'};
+const PUB={c1:'주의 1단계',c2:'주의 2단계',c3:'주의 3단계',fav:'추천',next:'관심 가게'};
+const DONE={c1:'조심 딱지 붙였음',c2:'쓰레기로 박제 완료',c3:'개쓰레기로 박제 완료',fav:'또 시킬 집 등록'};
 const norm=s=>String(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[^0-9a-z가-힣]/g,'');
 const core=s=>norm(s).replace(/(본점|직영점|수원점|[가-힣]{1,6}점)$/,'');
 const bld=a=>String(a||'').split(',')[0].trim();
 const big=s=>{const o=new Set();for(let i=0;i<s.length-1;i++)o.add(s.slice(i,i+2));return o};
 
+/* 예시 가게와 예시 후기 (전부 가상) */
+const EXS=[
+ {id:'ex1',n:'모루치킨 수원점',t:'통닭(치킨)',a:'경기도 수원시 예시구 모루로 10, 1층 (예시동)'},
+ {id:'ex2',n:'모루분식',t:'분식',a:'경기도 수원시 예시구 모루로 10, 2층 (예시동)'},
+ {id:'ex3',n:'모루반점 정자점',t:'중국식',a:'경기도 수원시 예시구 망치로 5 (예시동)'},
+ {id:'ex4',n:'모루피자',t:'경양식',a:'경기도 수원시 예시구 모루로 22 (예시동)'},
+ {id:'ex5',n:'모루족발',t:'한식',a:'경기도 수원시 예시구 망치로 31 (예시동)'}];
+const PREV={
+ ex1:{bad:[{k:'주의 2단계',d:'2026-11-21',x:'주문한 치킨무와 콜라가 빠져서 왔고, 치킨 절반이 식은 상태였습니다. 포장 마지막에 구성품 확인을 부탁드립니다.',c:1,s:12,rp:'불편을 드려 죄송합니다. 포장대에 구성품 점검표를 붙였습니다.',fx:'개선 등록 2026-11-23'},{k:'주의 1단계',d:'2026-11-12',x:'리뷰 이벤트 참여를 여러 번 요청받아 부담스러웠습니다.',c:1,s:4}],
+       good:[{k:'추천',d:'2026-11-19',x:'양념 맛이 진하고 튀김이 바삭했습니다. 양도 가격에 비해 넉넉한 편입니다.',c:1,s:3}]},
+ ex3:{bad:[{k:'주의 1단계',d:'2026-11-02',x:'안내된 시간보다 40분 정도 늦게 도착했습니다.',c:0,s:1}],
+       good:[{k:'추천',d:'2026-11-20',x:'짬뽕 국물이 진하고 해물이 넉넉합니다. 포장 상태도 깔끔했습니다.',c:1,s:21},{k:'추천',d:'2026-11-08',x:'탕수육 소스를 따로 담아 줘서 눅눅하지 않았습니다.',c:1,s:9}]}};
+const TOWN=[{id:'ex3',g:28},{id:'ex4',g:17},{id:'ex5',g:9}];
+function seedEx(){if(S.exSeeded)return;S.exSeeded=1;
+ S.rates.ex1=[{d:'2026-11-20',taste:1,qty:1,deliv:2,svc:0,tags:['누락','식어서 옴'],memo:'치킨무 누락, 반은 식어서 옴',rant:'진짜 개빡치네. 다시는 안 시킴'}];S.lists.ex1='c2';
+ S.rates.ex3=[{d:'2026-11-18',taste:3,qty:3,deliv:3,svc:3,tags:[],memo:'짬뽕 국물 진함. 양 넉넉',rant:''}];S.lists.ex3='fav';
+ S.lists.ex4='next';save()}
+
 function score(q,item){
-  const a=item._n,c=item._c;
-  if(!q)return 0;
-  if(a===q)return 100;
-  if(c===q)return 95;
+  const a=item._n,c=item._c;if(!q)return 0;
+  if(a===q)return 100;if(c===q)return 95;
   if(a.includes(q))return 85-Math.min(20,a.length-q.length);
   if(q.includes(c)&&c.length>=2)return 75-Math.min(20,q.length-c.length);
   const A=item._b,B=big(q);if(!B.size)return 0;let n=0;B.forEach(x=>{if(A.has(x))n++});
   return Math.round(60*2*n/(A.size+B.size));
 }
-function find(q,gu,lim=12){
-  const nq=core(q)||norm(q);
-  return DB.filter(x=>!gu||x.a.includes(gu)).map(x=>[score(nq,x),x]).filter(p=>p[0]>=25).sort((p,r)=>r[0]-p[0]).slice(0,lim).map(p=>p[1]);
+function find(q,lim=12){
+  const raw=q.trim(),nq=core(q)||norm(q);
+  const addr=raw.length>=2&&/[동로길가읍면리]$/.test(raw);
+  return DB.map(x=>[Math.max(score(nq,x),addr&&x.a.includes(raw)?70:0),x]).filter(p=>p[0]>=25).sort((p,r)=>r[0]-p[0]).slice(0,lim).map(p=>p[1]);
 }
 function parseShare(t){
   const m=t.match(/https?:\/\/\S+/);let url=m?m[0].replace(/[)\]>.,]+$/,''):'';
@@ -119,146 +204,132 @@ function parseShare(t){
   if(qm)return{url,name:qm[1].trim()};
   if(ce){const bm=t.match(/\[([^\]]{1,40})\]/);return{url,name:bm?bm[1].trim():''}}
   let name=t.replace(/https?:\/\/\S+/g,'').replace(/\[[^\]]*\]/g,'').replace(/배달의\s*민족|배민|에서\s*주문해\s*보세요|추천합니다|공유/g,'').split(/\n/).map(s=>s.trim()).filter(Boolean)[0]||'';
-  name=name.replace(/[“”"'!~]/g,'').trim();
-  return{url,name};
+  return{url,name:name.replace(/[“”"'!~]/g,'').trim()};
+}
+function appOf(id){const ks=Object.entries(S.links).filter(([k,v])=>v===id).map(([k])=>k);const ce=ks.some(k=>k.startsWith('ce:')),bm=ks.some(k=>!k.startsWith('ce:')&&!k.startsWith('name:'));return ce&&!bm?'쿠팡이츠':bm&&!ce?'배민':'배달앱'}
+
+/* 화면 전환 */
+let VIEW='home',PREVV='home',MODE='before',SRC='배민',LAST=null;
+function show(v){if(v!=='store'&&VIEW!=='store')PREVV=VIEW;else if(v==='store'&&VIEW!=='store')PREVV=VIEW;VIEW=v;
+  ['home','before','after','store','list','town'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  const nv={home:'home',before:'before',after:'home',store:PREVV==='before'?'before':PREVV==='list'?'list':'home',list:'list',town:'town'}[v];
+  document.querySelectorAll('nav.bot button').forEach(b=>b.classList.toggle('on',b.dataset.nav===nv));
+  if(v==='list')renderList();if(v==='before')renderBefore();if(v==='town')renderTown();scrollTo(0,0)}
+
+function candList(list,key){
+  if(!list.length)return '<p class="empty">비슷한 이름의 영업 중인 가게를 못 찾았습니다. 이름을 줄이거나 동 이름으로 찾아보세요.</p>';
+  return list.map(x=>`<div class="cand" data-id="${esc(x.id)}" data-key="${esc(key||'')}" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${esc(x.t)}, ${esc(x.a)}</small></span><span class="pick">${key?'이 가게예요':'열기'}</span></div>`).join('');
 }
 
-function candList(list,url){
-  if(!list.length)return '<p class="empty">비슷한 이름의 영업 중인 가게를 못 찾았습니다. 가게 검색 탭에서 직접 찾아보세요.</p>';
-  return list.map(x=>`<div class="cand" data-id="${esc(x.id)}" data-url="${esc(url||'')}" tabindex="0"><span><b>${esc(x.n)}</b><small>${esc(x.t)} · ${esc(x.a)}</small></span><span class="pick">${url?'이 가게예요':'열기'}</span></div>`).join('');
+function pubBlock(id){
+  const p=PREV[id];
+  if(!p)return `<div class="pub"><b>다른 사람들 후기</b><span class="soon">3단계 준비 중</span>
+  <div class="bar zero"><span class="bd" style="flex:1">불만 0</span><span class="gd" style="flex:1">추천 0</span></div>
+  <p class="hint">아직 공개 후기가 없습니다. 공개 후기는 주문내역으로 인증한 사람만 쓸 수 있게 열릴 예정입니다.</p></div>`;
+  const b=p.bad.length,g=p.good.length,tot=b+g;
+  const sb=x=>x.slice().sort((a,c)=>(c.c-a.c)||(c.s-a.s));
+  const one=(r,kind)=>`<div class="rv"><div class="h"><span class="k ${kind}">${esc(r.k)}</span><span>${r.c?'주문 인증':'미인증'}, ${esc(r.d)}</span></div><div style="margin-top:4px">${esc(r.x)}</div>
+    <div class="h" style="margin-top:6px"><span>${kind==='bd'?'나도 겪었어요':'나도 좋았어요'} ${r.s}</span><button class="chip" style="min-height:28px" data-soon="3">${kind==='bd'?'나도 겪었어요':'나도 좋았어요'}</button></div>
+    ${r.rp?`<div class="rp"><b>사장님 답변</b><br>${esc(r.rp)}<br><small>${esc(r.fx||'')}</small></div>`:''}</div>`;
+  return `<div class="pub" data-pub="${esc(id)}"><b>다른 사람들 후기</b><span class="ex">예시</span><span class="soon">3단계 준비 중</span>
+  <div class="bar"><span class="bd" style="flex:${b||.01}">불만 ${b}</span><span class="gd" style="flex:${g||.01}">추천 ${g}</span></div>
+  <div class="tops">${b?one(sb(p.bad)[0],'bd'):'<div class="rv">불만 후기 없음</div>'}${g?one(sb(p.good)[0],'gd'):'<div class="rv">추천 후기 없음</div>'}</div>
+  <div class="ptabs"><button class="on" data-pt="bad">불만 전체 ${b}</button><button data-pt="good">추천 전체 ${g}</button></div>
+  <div class="rvlist">${sb(p.bad).map(r=>one(r,'bd')).join('')}</div></div>`;
 }
 
-function storeCard(id,from){
+function storeCard(id,from,mode){
   const x=BYID[id];if(!x)return '';
   const st=S.lists[id];const rs=S.rates[id]||[];
   const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
   const fromTxt=from?`<div class="who">${SRC} 표시 이름 <b>${esc(from)}</b><br>등록 상호 <b>${esc(x.n)}</b>${core(from)===x._c||norm(from)===x._n?' (같음)':''}</div>`:'';
-  const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?' · <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
-  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}${r.rant?'<br><small>화풀이(나만 보기): '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
-  return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
-  <div class="meta">${esc(x.t)}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
-  ${st?`<p style="margin:10px 0 0;font-weight:700">${({c1:'내가 조심으로 찍은 가게',c2:'내가 쓰레기로 찍은 가게',c3:'내가 개쓰레기로 찍은 가게',avoid:'남의 평가 보고 조심으로 담은 가게',fav:'또 시켜도 되는 가게'})[st]||''}</p>`:''}
+  const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?', <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
+  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)}, 맛 ${r.taste}, 양과 가격 ${r.qty}, 배달 ${r.deliv}${r.svc?', 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br>'+esc(r.memo):''}${r.rant?'<br><small>화풀이: '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
+  const openForm=mode==='after'&&!rs.length;
+  return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}" data-mode="${mode||''}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
+  <div class="meta">${esc(x.t)}${x.ex?'<span class="ex">예시</span>':''}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
+  ${st?`<p style="margin:10px 0 0;font-weight:700">${MINE[st]}</p>`:''}
   ${fromTxt}${sameTxt}${hist}
   <div class="dash"></div>
-  <div class="row"><button class="btn" data-act="rate">평가하기</button><button class="btn amber" data-act="avoid">${st==='avoid'?'조심 해제':'조심 담기'}</button>${st?'<button class="btn ghost" data-act="clear">기록에서 빼기</button>':''}</div>
+  <div class="row"><button class="btn" data-act="rate">${rs.length?'또 기록하기':'먹고 나서 평가하기'}</button><button class="btn ghost" data-act="next">${st==='next'?'다음 주문에서 빼기':'다음 주문에 담기'}</button>${st&&st!=='next'?'<button class="btn ghost" data-act="clear">딱지 떼기</button>':''}</div>
   ${rs.length?'<div class="row"><button class="btn ghost" data-act="tell">친구에게</button><button class="btn ghost" data-act="owner">사장님께</button><button class="btn ghost" data-act="cs">고객센터</button></div>':''}
-  <div class="rbox"></div></article>`;
+  <div class="rbox">${openForm?rateForm():''}</div></article>${pubBlock(id)}`;
 }
 
 function rateForm(){
-  const seg=(k,opts)=>`<div class="rate"><span>${opts.t}</span><div class="seg" data-k="${k}">${opts.v.map(([v,l])=>`<button type="button" data-v="${v}">${l}</button>`).join('')}</div></div>`;
-  const three=[[1,'1 별로'],[2,'2 무난'],[3,'3 또 시킴']];
+  const seg=(k,t,v)=>`<div class="rate"><span>${t}</span><div class="seg" data-k="${k}">${v.map(([n,l])=>`<button type="button" data-v="${n}">${l}</button>`).join('')}</div></div>`;
+  const three=[[1,'1 완전 구림'],[2,'2 그럭저럭'],[3,'3 또 시킴']];
   return `<div class="dash"></div>
-  ${seg('taste',{t:'맛',v:three})}${seg('qty',{t:'양·가격',v:three})}${seg('deliv',{t:'배달 상태',v:three})}
-  ${seg('svc',{t:'응대 (선택)',v:[[0,'연락 없음'],[1,'1'],[2,'2'],[3,'3']]})}
-  <label class="l">화난 이유 (여러 개 고를 수 있어요)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div>
+  ${seg('taste','맛',three)}${seg('qty','양과 가격',three)}${seg('deliv','배달 상태',three)}
+  ${seg('svc','응대 (선택)',[[0,'연락 없음'],[1,'1'],[2,'2'],[3,'3']])}
+  <div class="tagbox" hidden><label class="l">뭐가 빡쳤음? (여러 개 가능)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div></div>
   <label class="l">메모</label><input data-f="memo" placeholder="무슨 일이 있었는지 짧게">
-  <label class="l">화풀이 칸 · 나만 보기</label><textarea data-f="rant" placeholder="여기는 아무도 안 봅니다. 마음껏 쓰세요."></textarea>
-  <label class="l">사진 · 나만 보기 (각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div><div class="phs" data-prev></div>
-  <div class="row"><button class="btn" data-act="saverate">기록하기</button></div>`;
+  <label class="l">화풀이 칸 (나만 봄, 욕해도 됨)</label><textarea data-f="rant" placeholder="여긴 아무도 못 봅니다. 시원하게 쓰세요"></textarea>
+  <label class="l">사진 (나만 봄, 각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div><div class="phs" data-prev></div>
+  <div class="row"><button class="btn red big wide" data-act="saverate">기록하기</button></div>`;
 }
 
-function render(id,from){$('#out').innerHTML=storeCard(id,from)}
-function rerenderCard(card){const id=card.dataset.card;const from=card.dataset.from;card.outerHTML=storeCard(id,from)}
+function nextSteps(card,id){
+  const st=S.lists[id],low=/^c/.test(st||'');
+  card.querySelector('.rbox').innerHTML=`<div class="dash"></div><b>${low?'다음 할 일':'좋은 집은 알려야죠'}</b><div class="next">
+  ${low?'<button class="btn red big" data-act="cs">보상 요청하기 (고객센터)</button><button class="btn big" data-act="owner">사장님께 한마디</button><button class="btn ghost big" data-act="tell">친구에게 알리기</button>':'<button class="btn big" data-act="tell">친구에게 추천하기</button>'}
+  <button class="btn ghost big" data-act="public">모두에게 공개하기<span class="soon">3단계 준비 중</span></button></div>
+  ${low?'<p class="hint">보상은 시간이 지나면 어려워집니다. 고객센터부터 먼저 하세요</p>':''}`;
+}
 
-function doShare(){
-  const t=$('#paste').value.trim();if(!t){toast('공유 내용을 붙여넣어 주세요');return}
+function show_store(id,from,mode){const el=$('#sout');el.innerHTML=storeCard(id,from,mode);if(VIEW!=='store')show('store');else scrollTo(0,0)}
+function rerenderCard(card){const id=card.dataset.card,from=card.dataset.from,mode='';const pub=card.nextElementSibling&&card.nextElementSibling.classList.contains('pub')?card.nextElementSibling:null;if(pub)pub.remove();card.outerHTML=storeCard(id,from,mode)}
+
+function doShare(t){
+  t=(t||'').trim();if(!t){toast('공유 내용을 붙여넣어 주세요');return}
   const {url,name}=parseShare(t);SRC=String(url).startsWith('ce:')?'쿠팡이츠':'배민';
-  if(url&&S.links[url]&&BYID[S.links[url]]){render(S.links[url],name);toast('이미 연결된 가게예요');return}
-  if(!name){LAST={list:[],url,name:''};showCands([],url,'');return}
-  const list=find(name,'');
-  const ex=list.filter(x=>x._n===norm(name));
+  const pick=id=>{const has=(S.rates[id]||[]).length||S.lists[id];MODE=has?'before':'after';show_store(id,name,MODE);if(has)toast('전에 기록한 가게예요')};
+  if(url&&S.links[url]&&BYID[S.links[url]]){pick(S.links[url]);return}
+  const list=name?find(name):[];const ex=list.filter(x=>x._n===norm(name));
   LAST={list,url,name};
-  if(ex.length===1){
-    if(url){S.links[url]=ex[0].id;save()}
-    render(ex[0].id,name);
-    $('#out').insertAdjacentHTML('beforeend','<div class="row"><button class="btn ghost" data-act="wrong">이 가게가 아니에요</button></div>');
-    return;
-  }
+  if(ex.length===1){if(url){S.links[url]=ex[0].id;save()}pick(ex[0].id);
+    $('#sout').insertAdjacentHTML('beforeend','<div class="row"><button class="btn ghost" data-act="wrong">이 가게가 아니에요</button></div>');return}
   showCands(list,url,name);
 }
-let LAST=null,SRC='배민';
 function showCands(list,url,name){
   const key=url||'name:'+norm(name);
-  if(!name){$('#out').innerHTML=`<div class="card"><div class="meta">${url.startsWith('ce:')?'쿠팡이츠 공유':'공유된 링크'}</div><h2>처음 보는 가게입니다</h2>
-  <div class="meta">링크에 가게 이름이 없어요. 한 번만 찾아 주시면 다음부터 바로 연결됩니다</div><div class="dash"></div>
-  <input id="cq" data-key="${esc(key)}" placeholder="가게 이름 (예: 본도시락)"><div id="cqout"></div></div>`;setTimeout(()=>$('#cq')&&$('#cq').focus(),50);return}
-  $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name)}</h2>
-  <div class="meta">${url?'처음 보는 가게입니다':'링크 없이 이름으로 찾았습니다'}</div><div class="dash"></div>
-  ${list[0]?`<div class="who">${SRC} 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div><div class="dash"></div>`:''}
-  <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}
-  <div class="dash"></div><label class="l" for="cq">목록에 없으면 직접 찾기</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름"><div id="cqout"></div></div>`;
+  $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유</div><h2>처음 보는 가게입니다</h2>
+  ${name&&list[0]?`<div class="who">${SRC} 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div>`:''}
+  ${name?'':'<p class="meta">링크에 가게 이름이 없어요. 한 번만 찾아 주시면 다음부터 바로 연결됩니다</p>'}
+  ${list.length?`<div class="dash"></div><b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}`:''}
+  <div class="dash"></div><label class="l" for="cq">${list.length?'목록에 없으면 직접 찾기':'가게 찾기'}</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름, 동, 도로명"><div id="cqout"></div></div>`;
+  if(VIEW!=='store')show('store');
 }
 
-function renderSearch(){
-  const q=$('#q').value.trim(),gu=$('#gu').value;
-  $('#sout').innerHTML=q?`<div class="card">${candList(find(q,gu,20),'')}</div>`:'<p class="empty">가게 이름을 입력하세요. 수원시에 영업 신고된 일반음식점 '+DB.length.toLocaleString()+'곳에서 찾습니다.</p>';
+function renderBefore(){
+  const q=$('#qb').value.trim();
+  $('#bout').innerHTML=q?`<div class="card">${candList(find(q,20),'')}</div>`:'';
+  const g=k=>Object.entries(S.lists).filter(([i,v])=>v===k&&BYID[i]).map(([i])=>i);
+  const warn=[...g('c3'),...g('c2'),...g('c1')],nx=g('next');
+  const li=ids=>ids.map(i=>{const x=BYID[i];return `<div class="cand" data-id="${esc(i)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${LBL[S.lists[i]]}, ${esc(bld(x.a))}</small></span><span class="pick">열기</span></div>`}).join('');
+  $('#bquick').innerHTML=q?'':`<div class="sect">조심할 가게 <i>${warn.length}곳</i></div>${warn.length?li(warn):'<p class="empty">아직 없어요</p>'}
+  <div class="sect">다음 주문에 <i>${nx.length}곳, 다음에 시켜볼 가게</i></div>${nx.length?li(nx):'<p class="empty">남의 후기 보고 궁금해진 가게를 담아 두세요</p>'}`;
 }
-
+function renderAfter(){const q=$('#qa').value.trim();$('#aout').innerHTML=q?`<div class="card">${candList(find(q,20),'')}</div>`:'<p class="hint">가게를 고르면 바로 평가 칸이 열립니다</p>'}
 function renderList(){
-  const groups={c3:[],c2:[],c1:[],avoid:[],fav:[]};
+  const groups={c3:[],c2:[],c1:[],fav:[],next:[]};
   Object.entries(S.lists).forEach(([id,k])=>{if(BYID[id]&&groups[k])groups[k].push(id)});
-  const sec=(k,title,desc)=>`<div class="sect">${title} <i>${groups[k].length}곳 · ${desc}</i></div>${groups[k].length?groups[k].map(id=>{const x=BYID[id];return `<div class="cand" data-id="${esc(id)}" data-url="" tabindex="0"><span><b>${esc(x.n)}</b><small>${esc(x.a)}</small></span><span class="pick">열기</span></div>`}).join(''):'<p class="empty">아직 없어요</p>'}`;
-  $('#lout').innerHTML=sec('c3','개쓰레기','세 항목 모두 1점')+sec('c2','쓰레기','1점 두 개')+sec('c1','조심','1점 한 개')+sec('avoid','조심(남의 평가)','직접 안 먹어봄')+sec('fav','또 시킴','세 항목 모두 3점');
+  const sec=(k,title,desc)=>`<div class="sect">${title} <i>${groups[k].length}곳, ${desc}</i></div>${groups[k].length?groups[k].map(id=>{const x=BYID[id];const r=(S.rates[id]||[]).slice(-1)[0];return `<div class="cand" data-id="${esc(id)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${r?esc(r.d)+(r.memo?', '+esc(r.memo):''):esc(bld(x.a))}</small></span><span class="pick">열기</span></div>`}).join(''):'<p class="empty">아직 없어요</p>'}`;
+  $('#lout').innerHTML=sec('c3','개쓰레기','세 항목 모두 1점')+sec('c2','쓰레기','1점 두 개')+sec('c1','조심','1점 한 개')+sec('fav','또 시킴','세 항목 모두 3점')+sec('next','다음 주문에','다음에 시켜볼 가게');
 }
+function renderTown(){$('#tout').innerHTML=TOWN.map((r,i)=>{const x=BYID[r.id];return `<div class="rank cand" data-id="${r.id}" data-key=""><span class="n">${i+1}</span><span style="flex:1"><b>${esc(x.n)}<span class="ex">예시</span></b><small>추천 ${r.g}, ${esc(bld(x.a))}</small></span></div>`}).join('')}
 
-function tab(t){
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ['share','search','list'].forEach(v=>$('#v-'+v).hidden=v!==t);
-  if(t==='list')renderList();if(t==='search')renderSearch();
-}
+/* 사용법 안내 */
+const ONB=[
+ {h:'가게 화면에서 공유',p:'배민, 쿠팡이츠 둘 다 가게 화면 오른쪽 위에 공유 버튼이 있어요',m:'<div style="position:absolute;inset:14px 14px auto;height:120px;background:#dadde3;border-radius:12px"></div><div style="position:absolute;top:26px;right:28px;width:36px;height:36px;border:3px solid #e8402f;border-radius:50%"></div><div style="position:absolute;left:24px;top:150px;width:55%;height:16px;background:#c9ccd3;border-radius:6px"></div><div style="position:absolute;left:24px;top:178px;width:35%;height:12px;background:#dadde3;border-radius:6px"></div>'},
+ {h:'목록에서 주문 전에',p:'처음 한 번은 목록 끝의 모두 보기 안에 있어요. 그다음부턴 앞쪽에 떠요',m:'<div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:#2b2c31;border-radius:20px 20px 0 0;display:flex;gap:14px;justify-content:center;align-items:center"><i style="width:44px;height:44px;border-radius:12px;background:#555"></i><i style="width:44px;height:44px;border-radius:12px;background:#e8402f;outline:3px solid #fff;outline-offset:3px"></i><i style="width:44px;height:44px;border-radius:12px;background:#555"></i><i style="width:44px;height:44px;border-radius:12px;background:#555"></i></div>'},
+ {h:'주문 전엔 확인, 주문 후엔 기록',p:'기록한 가게면 경고가 먼저 뜨고, 처음 보는 가게면 바로 평가 칸이 열려요',m:'<div style="position:absolute;inset:30px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="border:2px solid #16171b;border-radius:16px;background:#fff;padding:12px;font:400 20px Black Han Sans,sans-serif">주문<br>전에</div><div style="background:#e8402f;color:#fff;border-radius:16px;padding:12px;font:400 20px Black Han Sans,sans-serif">주문<br>후에</div></div>'},
+ {h:'욕은 나만, 밖으론 점잖게',p:'내 기록엔 마음껏 쓰세요. 친구, 사장님, 고객센터로 나가는 글은 앱이 알아서 존댓말로 바꿔 줘요',m:'<div style="position:absolute;inset:24px 20px auto;background:#fff;border-radius:14px;padding:12px;font-size:13px">화풀이: 진짜 개빡치네</div><div style="position:absolute;top:96px;left:0;right:0;text-align:center;font-size:22px">↓</div><div style="position:absolute;inset:130px 20px auto;background:#ffe3de;border-radius:14px;padding:12px;font-size:13px">주문한 메뉴 일부가 빠져서 왔습니다. 확인 부탁드립니다.</div>'}];
+function onboard(){let i=0;const o=document.createElement('div');o.className='onb';o.setAttribute('role','dialog');o.setAttribute('aria-label','사용법 안내');document.body.appendChild(o);
+ const draw=()=>{const s=ONB[i];o.innerHTML=`<div style="text-align:right"><button class="back" data-o="skip">건너뛰기</button></div><div class="pg"><div class="mock">${s.m}</div><h4>${i+1}. ${s.h}</h4><p>${s.p}</p></div><div class="dots">${ONB.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div><button class="btn red big wide" data-o="next">${i<ONB.length-1?'다음':'시작하기'}</button>`};
+ o.onclick=e=>{const b=e.target.closest('[data-o]');if(!b)return;if(b.dataset.o==='next'&&i<ONB.length-1){i++;draw();return}S.onb=1;save();o.remove()};draw()}
 
-document.addEventListener('click',e=>{
-  const tb=e.target.closest('.tabs button');if(tb){tab(tb.dataset.t);return}
-  const cd=e.target.closest('.cand');
-  if(cd){const id=cd.dataset.id,url=cd.dataset.url;
-    const from=url?parseShare($('#paste').value).name:'';
-    if(url){S.links[url]=id;save();toast('연결 저장 · 다음 공유부터 바로 보여드려요')}
-    const host=cd.closest('section');
-    if(host.id==='v-share')render(id,from);else{host.querySelector('#sout,#lout').innerHTML=storeCard(id,'')}
-    return}
-  const chp=e.target.closest('.chip');if(chp){chp.classList.toggle('on');return}
-  const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
-  const ab=e.target.closest('[data-act]');if(!ab)return;
-  const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
-  if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
-  if(['tell','owner','cs'].includes(act)){
-    const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';const P=appOf(id);
-    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}  맛 ${r.taste} / 양·가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+(r.memo?`\n${r.memo}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
-    if(act==='owner'){ttl=P==='쿠팡이츠'?'사장님께 (쿠팡이츠 리뷰에 붙여넣기)':`사장님께 (${P} 리뷰나 사장님 메시지에 붙여넣기)`;t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+(r.memo?`\n${r.memo}`:'')+`\n개선되면 다시 주문해 보겠습니다.`}
-    if(act==='cs'){ttl=`${P} 고객센터에 보낼 내용`;t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}`+(r.memo?`\n내용: ${r.memo}`:'')+`\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
-    card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}${act==='cs'&&r.photos&&r.photos.length?'<button class="btn red" data-act="sendph">사진과 함께 보내기</button>':''}</div>`;
-    return}
-  if(act==='copy'||act==='send'){
-    const v=card.querySelector('[data-f=gen]').value;
-    const cp=()=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('복사했습니다')).catch(()=>{const ta=card.querySelector('[data-f=gen]');ta.select();try{document.execCommand('copy');toast('복사했습니다')}catch(e){toast('길게 눌러 복사해 주세요')}})};
-    if(act==='send'&&navigator.share){navigator.share({text:v}).catch(()=>{})}else cp();
-    return}
-  if(act==='sendph'){
-    const v=card.querySelector('[data-f=gen]').value,rs=S.rates[id]||[],r=rs[rs.length-1];
-    (async()=>{const fs=[];for(const [i,q] of r.photos.entries()){const b=await idb.get(q.k);if(b)fs.push(new File([b],`photo${i+1}.jpg`,{type:'image/jpeg'}))}
-      if(navigator.canShare&&navigator.canShare({files:fs}))navigator.share({text:v,files:fs}).catch(()=>{});else toast('이 기기에서는 사진 함께 보내기가 안 됩니다. 문구를 복사해 주세요')})();
-    return}
-  if(act==='rate'){const rb=card.querySelector('.rbox');rb.innerHTML=rb.innerHTML?'':rateForm();return}
-  if(act==='avoid'){if(S.lists[id]==='avoid')delete S.lists[id];else S.lists[id]='avoid';save();rerenderCard(card);toast(S.lists[id]?'조심에 담았습니다':'해제했습니다');return}
-  if(act==='clear'){delete S.lists[id];save();rerenderCard(card);return}
-  if(act==='saverate'){
-    const v=k=>{const b=card.querySelector(`.seg[data-k=${k}] .on`);return b?+b.dataset.v:null};
-    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:[...card.querySelectorAll('.chip.on')].map(b=>b.dataset.tag)};
-    if(!r.taste||!r.qty||!r.deliv){toast('맛 · 양·가격 · 배달 상태는 꼭 골라주세요');return}
-    if(/씨발|시발|존나|좆|병신|개새|ㅅㅂ|ㅂㅅ/.test(r.memo)){toast('메모에 욕설이 있어요. 화풀이 칸에 써주세요');return}
-    const pend=card._ph||{food:[],proof:[]};
-    (async()=>{r.photos=[];const ts=Date.now();
-    for(const kind of ['food','proof'])for(const [i,f] of pend[kind].entries()){try{const b=await shrink(f);const k=`${id}|${ts}|${kind}|${i}`;await idb.put(k,b);r.photos.push({k,kind})}catch(e){}}
-    if(!r.photos.length)delete r.photos;
-    (S.rates[id]=S.rates[id]||[]).push(r);
-    const ones=[r.taste,r.qty,r.deliv].filter(v=>v===1).length,top=r.taste===3&&r.qty===3&&r.deliv===3,low=ones>0;
-    if(low)S.lists[id]='c'+ones;else if(top)S.lists[id]='fav';
-    save();rerenderCard(card);toast(low?LBL['c'+ones]+'(으)로 기록했습니다':top?'또 시킴으로 기록했습니다':'기록했습니다');
-    })();
-  }
-});
-function appOf(id){const ks=Object.entries(S.links).filter(([k,v])=>v===id).map(([k])=>k);const ce=ks.some(k=>k.startsWith('ce:')),bm=ks.some(k=>!k.startsWith('ce:')&&!k.startsWith('name:'));return ce&&!bm?'쿠팡이츠':bm&&!ce?'배민':'배달앱'}
+/* 사진 저장소 */
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const q=indexedDB.open('sonjul',1);q.onupgradeneeded=()=>q.result.createObjectStore('photos');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}));
   const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('photos',m);const rq=f(t.objectStore('photos'));t.oncomplete=()=>res(rq.result);t.onerror=()=>rej(t.error)}));
   return{put:(k,v)=>tx('readwrite',s=>s.put(v,k)),get:k=>tx('readonly',s=>s.get(k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
@@ -266,23 +337,86 @@ async function shrink(f){const bm=await createImageBitmap(f);const sc=Math.min(1
 function loadThumbs(){document.querySelectorAll('img[data-pk]:not([src])').forEach(im=>{im.src='data:,';idb.get(im.dataset.pk).then(b=>{if(b)im.src=URL.createObjectURL(b);else im.remove()}).catch(()=>{})})}
 new MutationObserver(loadThumbs).observe(document.body,{childList:true,subtree:true});
 function drawPend(card){const ph=card._ph,pv=card.querySelector('[data-prev]');pv.innerHTML='';['food','proof'].forEach(kind=>ph[kind].forEach((f,i)=>{const im=document.createElement('img');im.src=URL.createObjectURL(f);im.alt=(kind==='proof'?'주문내역':'음식')+' 사진, 눌러서 빼기';im.dataset.pend=kind+'|'+i;pv.appendChild(im)}))}
+
 document.addEventListener('change',e=>{const inp=e.target.closest('input[data-ph]');if(!inp)return;const card=inp.closest('[data-card]');card._ph=card._ph||{food:[],proof:[]};const kind=inp.dataset.ph;const add=[...inp.files].slice(0,5-card._ph[kind].length);if(inp.files.length>add.length)toast('각 5장까지 올릴 수 있어요');card._ph[kind].push(...add);inp.value='';drawPend(card)});
+
 document.addEventListener('click',e=>{
+  const nv=e.target.closest('[data-nav]');if(nv){show(nv.dataset.nav);return}
+  const go=e.target.closest('[data-go]');if(go){MODE=go.dataset.go;show(MODE);if(MODE==='after')renderAfter();return}
+  const sn=e.target.closest('[data-soon]');if(sn){toast(sn.dataset.soon+'단계에서 열립니다');return}
+  const pt=e.target.closest('[data-pt]');if(pt){const box=pt.closest('.pub'),p=PREV[box.dataset.pub];box.querySelectorAll('[data-pt]').forEach(b=>b.classList.toggle('on',b===pt));const kind=pt.dataset.pt;box.querySelector('.rvlist').innerHTML=p[kind].slice().sort((a,c)=>(c.c-a.c)||(c.s-a.s)).map(r=>`<div class="rv"><div class="h"><span class="k ${kind==='bad'?'bd':'gd'}">${esc(r.k)}</span><span>${r.c?'주문 인증':'미인증'}, ${esc(r.d)}</span></div><div style="margin-top:4px">${esc(r.x)}</div><div class="h" style="margin-top:6px"><span>${kind==='bad'?'나도 겪었어요':'나도 좋았어요'} ${r.s}</span></div>${r.rp?`<div class="rp"><b>사장님 답변</b><br>${esc(r.rp)}<br><small>${esc(r.fx||'')}</small></div>`:''}</div>`).join('');return}
   const pe=e.target.closest('img[data-pend]');if(pe){const card=pe.closest('[data-card]');const [kind,i]=pe.dataset.pend.split('|');card._ph[kind].splice(+i,1);drawPend(card);return}
-  const im=e.target.closest('img[data-pk]');if(!im)return;const k=im.dataset.pk;
-  const v=document.createElement('div');v.className='viewer';v.innerHTML=`<img src="${im.src}" alt="${esc(im.alt)}"><div class="row"><button class="btn ghost" data-vx="del">사진 삭제</button><button class="btn" data-vx="close">닫기</button></div>`;document.body.appendChild(v);
-  v.onclick=async ev=>{const b=ev.target.closest('[data-vx]');if(!b&&ev.target!==v)return;if(b&&b.dataset.vx==='del'){await idb.del(k);Object.values(S.rates).forEach(rs=>rs.forEach(r=>{if(r.photos){r.photos=r.photos.filter(q=>q.k!==k);if(!r.photos.length)delete r.photos}}));save();im.remove();toast('사진을 삭제했습니다')}v.remove()};
+  const im=e.target.closest('img[data-pk]');if(im){const k=im.dataset.pk;const v=document.createElement('div');v.className='viewer';v.innerHTML=`<img src="${im.src}" alt="${esc(im.alt)}"><div class="row"><button class="btn ghost" data-vx="del">사진 삭제</button><button class="btn" data-vx="close">닫기</button></div>`;document.body.appendChild(v);
+    v.onclick=async ev=>{const b=ev.target.closest('[data-vx]');if(!b&&ev.target!==v)return;if(b&&b.dataset.vx==='del'){await idb.del(k);Object.values(S.rates).forEach(rs=>rs.forEach(r=>{if(r.photos){r.photos=r.photos.filter(q=>q.k!==k);if(!r.photos.length)delete r.photos}}));save();im.remove();toast('사진을 삭제했습니다')}v.remove()};return}
+  const cd=e.target.closest('.cand');
+  if(cd){const id=cd.dataset.id,key=cd.dataset.key;let from='';
+    if(key){S.links[key]=id;save();toast('연결 저장, 다음 공유부터 바로 떠요');from=LAST&&LAST.name||''}
+    const mode=VIEW==='after'?'after':key?((S.rates[id]||[]).length||S.lists[id]?'before':'after'):'before';
+    show_store(id,from,mode);return}
+  const chp=e.target.closest('.chip[data-tag]');if(chp){chp.classList.toggle('on');return}
+  const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));const card=sb.closest('[data-card]');const low=[...card.querySelectorAll('.seg[data-k=taste] .on,.seg[data-k=qty] .on,.seg[data-k=deliv] .on')].some(b=>b.dataset.v==='1');card.querySelector('.tagbox').hidden=!low;return}
+  const ab=e.target.closest('[data-act]');if(!ab)return;
+  const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
+  if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
+  if(act==='public'){const rs=S.rates[id]||[],r=rs[rs.length-1],st=S.lists[id];const x=BYID[id];
+    const t=`[${PUB[st]||'후기'}] ${x.n}\n맛 ${r.taste}/3, 양과 가격 ${r.qty}/3, 배달 ${r.deliv}/3`+(r.tags&&r.tags.length?`\n${r.tags.map(k=>OWN[k]).join(' ')}`:'');
+    card.querySelector('.rbox').insertAdjacentHTML('beforeend',`<div class="pub"><b>공개될 글 미리보기</b><span class="soon">3단계 준비 중</span><p class="hint">화풀이와 메모는 공개되지 않고, 아래처럼 존댓말로 정리됩니다. 공개하려면 주문내역 인증이 필요합니다</p><div class="rv" style="white-space:pre-line;margin-top:8px">${esc(t)}</div></div>`);ab.remove();return}
+  if(['tell','owner','cs'].includes(act)){
+    const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';const P=appOf(id);
+    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}, 맛 ${r.taste} / 양과 가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
+    if(act==='owner'){ttl=P==='쿠팡이츠'?'사장님께 (쿠팡이츠 리뷰에 붙여넣기)':`사장님께 (${P} 리뷰나 사장님 메시지에 붙여넣기)`;t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+`\n개선되면 다시 주문해 보겠습니다.`}
+    if(act==='cs'){ttl=`${P} 고객센터에 보낼 내용`;t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
+    card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}${act==='cs'&&r.photos&&r.photos.length?'<button class="btn red" data-act="sendph">사진과 함께 보내기</button>':''}</div><p class="hint">메모와 화풀이는 들어가지 않습니다. 필요하면 직접 덧붙이세요</p>`;
+    return}
+  if(act==='copy'||act==='send'){
+    const v=card.querySelector('[data-f=gen]').value;
+    const cp=()=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('복사했습니다')).catch(()=>{const ta=card.querySelector('[data-f=gen]');ta.select();try{document.execCommand('copy');toast('복사했습니다')}catch(e){toast('길게 눌러 복사해 주세요')}})};
+    if(act==='send'&&navigator.share){navigator.share({text:v}).catch(()=>{})}else cp();
+    return}
+  if(act==='sendph'){const v=card.querySelector('[data-f=gen]').value,rs=S.rates[id]||[],r=rs[rs.length-1];
+    (async()=>{const fs=[];for(const [i,q] of r.photos.entries()){const b=await idb.get(q.k);if(b)fs.push(new File([b],`photo${i+1}.jpg`,{type:'image/jpeg'}))}
+      if(navigator.canShare&&navigator.canShare({files:fs}))navigator.share({text:v,files:fs}).catch(()=>{});else toast('이 기기는 사진 함께 보내기가 안 돼요. 문구를 복사하세요')})();return}
+  if(act==='rate'){const rb=card.querySelector('.rbox');rb.innerHTML=rb.querySelector('[data-act=saverate]')?'':rateForm();return}
+  if(act==='next'){if(S.lists[id]==='next')delete S.lists[id];else if(!S.lists[id])S.lists[id]='next';else{toast('이미 기록이 있는 가게예요');return}save();rerenderCard(card);toast(S.lists[id]?'다음 주문에 담았음':'뺐습니다');return}
+  if(act==='clear'){delete S.lists[id];save();rerenderCard(card);return}
+  if(act==='saverate'){
+    const v=k=>{const b=card.querySelector(`.seg[data-k=${k}] .on`);return b?+b.dataset.v:null};
+    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:card.querySelector('.tagbox').hidden?[]:[...card.querySelectorAll('.chip.on')].map(b=>b.dataset.tag)};
+    if(!r.taste||!r.qty||!r.deliv){toast('맛, 양과 가격, 배달 상태는 꼭 골라 주세요');return}
+    if(/씨발|시발|존나|좆|병신|개새|ㅅㅂ|ㅂㅅ/.test(r.memo)){toast('메모엔 욕 빼고, 화풀이 칸에 쓰세요');return}
+    const pend=card._ph||{food:[],proof:[]};
+    (async()=>{r.photos=[];const ts=Date.now();
+      for(const kind of ['food','proof'])for(const [i,f] of pend[kind].entries()){try{const b=await shrink(f);const k=`${id}|${ts}|${kind}|${i}`;await idb.put(k,b);r.photos.push({k,kind})}catch(e){}}
+      if(!r.photos.length)delete r.photos;
+      (S.rates[id]=S.rates[id]||[]).push(r);
+      const ones=[r.taste,r.qty,r.deliv].filter(v=>v===1).length,top=r.taste===3&&r.qty===3&&r.deliv===3;
+      if(ones)S.lists[id]='c'+ones;else if(top)S.lists[id]='fav';else if(S.lists[id]==='next')delete S.lists[id];
+      save();const from=card.dataset.from;card.dataset.mode='';rerenderCard(card);
+      const nc=document.querySelector(`[data-card="${CSS.escape(id)}"]`);if(ones||top)nextSteps(nc,id);
+      toast(DONE[S.lists[id]]||'기록했음')})();
+  }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('cand'))e.target.click()});
-$('#go').onclick=doShare;$('#clr').onclick=()=>{$('#paste').value='';$('#out').innerHTML=''};
-let cqt;document.addEventListener('input',e=>{if(e.target.id!=='cq')return;clearTimeout(cqt);cqt=setTimeout(()=>{const q=e.target.value.trim();$('#cqout').innerHTML=q?candList(find(q,'',12),e.target.dataset.key):''},200)});
-let qt;$('#q').oninput=()=>{clearTimeout(qt);qt=setTimeout(renderSearch,200)};$('#gu').onchange=renderSearch;
+document.addEventListener('input',e=>{if(e.target.id==='cq'){clearTimeout(e.target._t);e.target._t=setTimeout(()=>{const q=e.target.value.trim();$('#cqout').innerHTML=q?candList(find(q,12),e.target.dataset.key):''},200)}
+  if(e.target.id==='qb'){clearTimeout(e.target._t);e.target._t=setTimeout(renderBefore,200)}
+  if(e.target.id==='qa'){clearTimeout(e.target._t);e.target._t=setTimeout(renderAfter,200)}});
+$('#go').onclick=()=>doShare($('#paste').value);$('#clr').onclick=()=>{$('#paste').value=''};
+$('#back').onclick=()=>show(PREVV==='store'?'home':PREVV);
+$('#howto').onclick=onboard;
+$('#exdel').onclick=()=>{EXS.forEach(x=>{delete S.rates[x.id];delete S.lists[x.id]});save();renderList();toast('예시 기록을 지웠습니다')};
+$('#exp').onclick=()=>{const b=new Blob([JSON.stringify(S)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='주문전에_기록_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('파일로 저장했습니다 (사진은 빠져요)')};
+$('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);if(!d.rates)throw 0;S=Object.assign({links:{},rates:{},lists:{}},d);save();renderList();toast('기록을 불러왔습니다')}).catch(()=>toast('주문 전에 기록 파일이 아니에요'));e.target.value=''};
 
 fetch('/order/suwon.json').then(r=>r.json()).then(d=>{
-  DB=d.map(x=>Object.assign(x,{_n:norm(x.n),_c:core(x.n)}));
-  DB.forEach(x=>{x._b=big(x._c||x._n);BYID[x.id]=x;(BYBLD[bld(x.a)]=BYBLD[bld(x.a)]||[]).push(x)});
-  try{const q=new URLSearchParams(location.search);const sh=[q.get('title'),q.get('text'),q.get('url')].filter(Boolean).join('\n');if(sh){$('#paste').value=sh;history.replaceState(null,'',location.pathname);doShare()}}catch(e){}
-  $('#dnote').textContent='데이터: 행정안전부 식품_일반음식점(수원시, 영업/정상 '+DB.length.toLocaleString()+'곳). 내 기록은 이 기기 브라우저에만 저장되는 테스트판입니다.';
+  DB=EXS.map(x=>Object.assign({ex:1},x)).concat(d);
+  DB.forEach(x=>{x._n=norm(x.n);x._c=core(x.n);x._b=big(x._c||x._n);BYID[x.id]=x;(BYBLD[bld(x.a)]=BYBLD[bld(x.a)]||[]).push(x)});
+  seedEx();
+  let shared=false;
+  try{const q=new URLSearchParams(location.search);const sh=[q.get('title'),q.get('text'),q.get('url')].filter(Boolean).join('\n');if(sh){shared=true;history.replaceState(null,'',location.pathname);doShare(sh)}}catch(e){}
+  if(!S.onb&&!shared)onboard();
+  $('#dnote').textContent='데이터: 행정안전부 식품_일반음식점(수원시, 영업/정상 '+d.length.toLocaleString()+'곳). 모루로 시작하는 가게와 후기는 화면 확인용 예시입니다.';
 }).catch(()=>{$('#dnote').textContent='데이터를 불러오지 못했습니다. 새로고침해 주세요.'});
 }
-</script><script>{let ev;const inApp=matchMedia('(display-mode: standalone)').matches||navigator.standalone;let done=false;try{done=localStorage.getItem('sonjul.inst')==='1'}catch(x){}addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;if(!inApp&&!done)document.getElementById('instbox').hidden=false});document.getElementById('inst').onclick=async()=>{if(!ev)return;ev.prompt();await ev.userChoice;ev=null;document.getElementById('instbox').hidden=true};addEventListener('appinstalled',()=>{document.getElementById('instbox').hidden=true;try{localStorage.setItem('sonjul.inst','1')}catch(x){}})}</script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/order/sw.js',{scope:'/order/'}).catch(()=>{})</script></body></html>
+</script>
+<script>{let ev;const inApp=matchMedia('(display-mode: standalone)').matches||navigator.standalone;let done=false;try{done=localStorage.getItem('sonjul.inst')==='1'}catch(x){}addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;if(!inApp&&!done)document.getElementById('instbox').hidden=false});document.getElementById('inst').onclick=async()=>{if(!ev)return;ev.prompt();await ev.userChoice;ev=null;document.getElementById('instbox').hidden=true};addEventListener('appinstalled',()=>{document.getElementById('instbox').hidden=true;try{localStorage.setItem('sonjul.inst','1')}catch(x){}})}</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/order/sw.js',{scope:'/order/'}).catch(()=>{})</script></body></html>
