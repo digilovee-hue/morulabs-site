@@ -60,7 +60,7 @@ label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
 
 <section id="v-share">
 <label class="l" for="paste">배민 공유 내용 붙여넣기</label>
-<textarea id="paste" placeholder="예) [배달의민족] 클로드반점 https://s.baemin.com/..."></textarea>
+<textarea id="paste" placeholder="배민이나 쿠팡이츠에서 공유한 내용"></textarea>
 <div class="row"><button class="btn" id="go">확인하기</button><button class="btn ghost" id="clr">지우기</button></div>
 
 <div id="out"></div>
@@ -110,7 +110,8 @@ function find(q,gu,lim=12){
   return DB.filter(x=>!gu||x.a.includes(gu)).map(x=>[score(nq,x),x]).filter(p=>p[0]>=25).sort((p,r)=>r[0]-p[0]).slice(0,lim).map(p=>p[1]);
 }
 function parseShare(t){
-  const m=t.match(/https?:\/\/\S+/);const url=m?m[0].replace(/[)\]>.,]+$/,''):'';
+  const m=t.match(/https?:\/\/\S+/);let url=m?m[0].replace(/[)\]>.,]+$/,''):'';
+  const ce=url.match(/coupangeats\.com\S*[?&]storeId=(\d+)/);if(ce)url='ce:'+ce[1];
   const qm=t.match(/['‘’"“”]([^'‘’"“”]{1,40})['‘’"“”]/);
   if(qm)return{url,name:qm[1].trim()};
   let name=t.replace(/https?:\/\/\S+/g,'').replace(/\[[^\]]*\]/g,'').replace(/배달의\s*민족|배민|에서\s*주문해\s*보세요|추천합니다|공유/g,'').split(/\n/).map(s=>s.trim()).filter(Boolean)[0]||'';
@@ -159,7 +160,8 @@ function doShare(){
   const t=$('#paste').value.trim();if(!t){toast('공유 내용을 붙여넣어 주세요');return}
   const {url,name}=parseShare(t);
   if(url&&S.links[url]&&BYID[S.links[url]]){render(S.links[url],name);toast('이미 연결된 가게예요');return}
-  const list=find(name||t,'');
+  if(!name){LAST={list:[],url,name:''};showCands([],url,'');return}
+  const list=find(name,'');
   const ex=list.filter(x=>x._n===norm(name));
   LAST={list,url,name};
   if(ex.length===1){
@@ -172,9 +174,13 @@ function doShare(){
 }
 let LAST=null;
 function showCands(list,url,name){
-  $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name||'(이름 못 읽음)')}</h2>
+  const key=url||'name:'+norm(name);
+  if(!name){$('#out').innerHTML=`<div class="card"><div class="meta">${url.startsWith('ce:')?'쿠팡이츠 공유':'공유된 링크'}</div><h2>처음 보는 가게입니다</h2>
+  <div class="meta">링크에 가게 이름이 없어요. 한 번만 찾아 주시면 다음부터 바로 연결됩니다</div><div class="dash"></div>
+  <input id="cq" data-key="${esc(key)}" placeholder="가게 이름 (예: 본도시락)"><div id="cqout"></div></div>`;setTimeout(()=>$('#cq')&&$('#cq').focus(),50);return}
+  $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name)}</h2>
   <div class="meta">${url?'처음 보는 가게입니다':'링크 없이 이름으로 찾았습니다'}</div><div class="dash"></div>
-  <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,url||'name:'+norm(name))}</div>`;
+  <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}</div>`;
 }
 
 function renderSearch(){
@@ -237,6 +243,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('cand'))e.target.click()});
 $('#go').onclick=doShare;$('#clr').onclick=()=>{$('#paste').value='';$('#out').innerHTML=''};
+let cqt;document.addEventListener('input',e=>{if(e.target.id!=='cq')return;clearTimeout(cqt);cqt=setTimeout(()=>{const q=e.target.value.trim();$('#cqout').innerHTML=q?candList(find(q,'',12),e.target.dataset.key):''},200)});
 let qt;$('#q').oninput=()=>{clearTimeout(qt);qt=setTimeout(renderSearch,200)};$('#gu').onchange=renderSearch;
 
 fetch('/order/suwon.json').then(r=>r.json()).then(d=>{
