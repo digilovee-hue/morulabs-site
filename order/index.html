@@ -129,7 +129,7 @@ function storeCard(id,from){
   const x=BYID[id];if(!x)return '';
   const st=S.lists[id];const rs=S.rates[id]||[];
   const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
-  const fromTxt=from&&core(from)!==x._c?`<div class="who">배민 표시 이름 <b>${esc(from)}</b> → 실제 등록 상호 <b>${esc(x.n)}</b></div>`:'';
+  const fromTxt=from?`<div class="who">배민 표시 이름 <b>${esc(from)}</b><br>등록 상호 <b>${esc(x.n)}</b>${core(from)===x._c||norm(from)===x._n?' (같음)':''}</div>`:'';
   const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?' · <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
   const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}${r.rant?'<br><small>화풀이(나만 보기): '+esc(r.rant)+'</small>':''}</div>`).join('')}</div>`:'';
   return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
@@ -181,6 +181,7 @@ function showCands(list,url,name){
   <input id="cq" data-key="${esc(key)}" placeholder="가게 이름 (예: 본도시락)"><div id="cqout"></div></div>`;setTimeout(()=>$('#cq')&&$('#cq').focus(),50);return}
   $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name)}</h2>
   <div class="meta">${url?'처음 보는 가게입니다':'링크 없이 이름으로 찾았습니다'}</div><div class="dash"></div>
+  ${list[0]?`<div class="who">배민 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div><div class="dash"></div>`:''}
   <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}
   <div class="dash"></div><label class="l" for="cq">목록에 없으면 직접 찾기</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름"><div id="cqout"></div></div>`;
 }
