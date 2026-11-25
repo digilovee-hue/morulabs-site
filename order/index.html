@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="manifest" href="/order/manifest.webmanifest"><meta name="theme-color" content="#16171b"><link rel="icon" href="/order/oc3-icon-192.png"><title>주문 전에</title>
+<link rel="manifest" href="/order/manifest.webmanifest?v=4"><meta name="theme-color" content="#16171b"><link rel="icon" href="/order/oc3-icon-192.png"><title>주문 전에</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 /* 이나불(이거 나만 불편해?) 구성 적용: 흰 바탕, Noto Sans KR 굵은 제목, 먹색 #16171b, 강조 빨강 #e8402f,
@@ -50,6 +50,9 @@ label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#fff;border-radius:999px;font:500 13px "Noto Sans KR";color:var(--sub);cursor:pointer}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
+.phs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.phs img{width:64px;height:64px;object-fit:cover;border-radius:10px;cursor:pointer;background:var(--line)}
+.phbtn{display:inline-flex;align-items:center}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}.viewer img{max-width:100%;max-height:78vh;border-radius:8px}
 .note{font-size:11px;color:var(--mute);margin-top:24px}
 </style></head><body>
 <div class="wrap">
@@ -114,7 +117,7 @@ function parseShare(t){
   const ce=url.match(/coupangeats\.com\S*[?&]storeId=(\d+)/);if(ce)url='ce:'+ce[1];
   const qm=t.match(/['‘’"“”]([^'‘’"“”]{1,40})['‘’"“”]/);
   if(qm)return{url,name:qm[1].trim()};
-  if(ce)return{url,name:''};
+  if(ce){const bm=t.match(/\[([^\]]{1,40})\]/);return{url,name:bm?bm[1].trim():''}}
   let name=t.replace(/https?:\/\/\S+/g,'').replace(/\[[^\]]*\]/g,'').replace(/배달의\s*민족|배민|에서\s*주문해\s*보세요|추천합니다|공유/g,'').split(/\n/).map(s=>s.trim()).filter(Boolean)[0]||'';
   name=name.replace(/[“”"'!~]/g,'').trim();
   return{url,name};
@@ -131,7 +134,7 @@ function storeCard(id,from){
   const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
   const fromTxt=from?`<div class="who">배민 표시 이름 <b>${esc(from)}</b><br>등록 상호 <b>${esc(x.n)}</b>${core(from)===x._c||norm(from)===x._n?' (같음)':''}</div>`:'';
   const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?' · <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
-  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}${r.rant?'<br><small>화풀이(나만 보기): '+esc(r.rant)+'</small>':''}</div>`).join('')}</div>`:'';
+  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}${r.rant?'<br><small>화풀이(나만 보기): '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
   return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
   <div class="meta">${esc(x.t)}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
   ${st?`<p style="margin:10px 0 0;font-weight:700">${({c1:'내가 조심으로 찍은 가게',c2:'내가 쓰레기로 찍은 가게',c3:'내가 개쓰레기로 찍은 가게',avoid:'남의 평가 보고 조심으로 담은 가게',fav:'또 시켜도 되는 가게'})[st]||''}</p>`:''}
@@ -151,6 +154,7 @@ function rateForm(){
   <label class="l">화난 이유 (여러 개 고를 수 있어요)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div>
   <label class="l">메모</label><input data-f="memo" placeholder="무슨 일이 있었는지 짧게">
   <label class="l">화풀이 칸 · 나만 보기</label><textarea data-f="rant" placeholder="여기는 아무도 안 봅니다. 마음껏 쓰세요."></textarea>
+  <label class="l">사진 · 나만 보기 (각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div><div class="phs" data-prev></div>
   <div class="row"><button class="btn" data-act="saverate">기록하기</button></div>`;
 }
 
@@ -219,16 +223,21 @@ document.addEventListener('click',e=>{
   const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
   if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
   if(['tell','owner','cs'].includes(act)){
-    const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';
+    const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';const P=appOf(id);
     if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}  맛 ${r.taste} / 양·가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+(r.memo?`\n${r.memo}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
-    if(act==='owner'){ttl='사장님께 (배민 리뷰나 사장님 메시지에 붙여넣기)';t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+(r.memo?`\n${r.memo}`:'')+`\n개선되면 다시 주문해 보겠습니다.`}
-    if(act==='cs'){ttl='배민 고객센터에 보낼 내용';t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}`+(r.memo?`\n내용: ${r.memo}`:'')+`\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
-    card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}</div>`;
+    if(act==='owner'){ttl=P==='쿠팡이츠'?'사장님께 (쿠팡이츠 리뷰에 붙여넣기)':`사장님께 (${P} 리뷰나 사장님 메시지에 붙여넣기)`;t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+(r.memo?`\n${r.memo}`:'')+`\n개선되면 다시 주문해 보겠습니다.`}
+    if(act==='cs'){ttl=`${P} 고객센터에 보낼 내용`;t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}`+(r.memo?`\n내용: ${r.memo}`:'')+`\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
+    card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}${act==='cs'&&r.photos&&r.photos.length?'<button class="btn red" data-act="sendph">사진과 함께 보내기</button>':''}</div>`;
     return}
   if(act==='copy'||act==='send'){
     const v=card.querySelector('[data-f=gen]').value;
     const cp=()=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('복사했습니다')).catch(()=>{const ta=card.querySelector('[data-f=gen]');ta.select();try{document.execCommand('copy');toast('복사했습니다')}catch(e){toast('길게 눌러 복사해 주세요')}})};
     if(act==='send'&&navigator.share){navigator.share({text:v}).catch(()=>{})}else cp();
+    return}
+  if(act==='sendph'){
+    const v=card.querySelector('[data-f=gen]').value,rs=S.rates[id]||[],r=rs[rs.length-1];
+    (async()=>{const fs=[];for(const [i,q] of r.photos.entries()){const b=await idb.get(q.k);if(b)fs.push(new File([b],`photo${i+1}.jpg`,{type:'image/jpeg'}))}
+      if(navigator.canShare&&navigator.canShare({files:fs}))navigator.share({text:v,files:fs}).catch(()=>{});else toast('이 기기에서는 사진 함께 보내기가 안 됩니다. 문구를 복사해 주세요')})();
     return}
   if(act==='rate'){const rb=card.querySelector('.rbox');rb.innerHTML=rb.innerHTML?'':rateForm();return}
   if(act==='avoid'){if(S.lists[id]==='avoid')delete S.lists[id];else S.lists[id]='avoid';save();rerenderCard(card);toast(S.lists[id]?'조심에 담았습니다':'해제했습니다');return}
@@ -238,11 +247,31 @@ document.addEventListener('click',e=>{
     const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:[...card.querySelectorAll('.chip.on')].map(b=>b.dataset.tag)};
     if(!r.taste||!r.qty||!r.deliv){toast('맛 · 양·가격 · 배달 상태는 꼭 골라주세요');return}
     if(/씨발|시발|존나|좆|병신|개새|ㅅㅂ|ㅂㅅ/.test(r.memo)){toast('메모에 욕설이 있어요. 화풀이 칸에 써주세요');return}
+    const pend=card._ph||{food:[],proof:[]};
+    (async()=>{r.photos=[];const ts=Date.now();
+    for(const kind of ['food','proof'])for(const [i,f] of pend[kind].entries()){try{const b=await shrink(f);const k=`${id}|${ts}|${kind}|${i}`;await idb.put(k,b);r.photos.push({k,kind})}catch(e){}}
+    if(!r.photos.length)delete r.photos;
     (S.rates[id]=S.rates[id]||[]).push(r);
     const ones=[r.taste,r.qty,r.deliv].filter(v=>v===1).length,top=r.taste===3&&r.qty===3&&r.deliv===3,low=ones>0;
     if(low)S.lists[id]='c'+ones;else if(top)S.lists[id]='fav';
     save();rerenderCard(card);toast(low?LBL['c'+ones]+'(으)로 기록했습니다':top?'또 시킴으로 기록했습니다':'기록했습니다');
+    })();
   }
+});
+function appOf(id){const ks=Object.entries(S.links).filter(([k,v])=>v===id).map(([k])=>k);const ce=ks.some(k=>k.startsWith('ce:')),bm=ks.some(k=>!k.startsWith('ce:')&&!k.startsWith('name:'));return ce&&!bm?'쿠팡이츠':bm&&!ce?'배민':'배달앱'}
+const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const q=indexedDB.open('sonjul',1);q.onupgradeneeded=()=>q.result.createObjectStore('photos');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}));
+  const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('photos',m);const rq=f(t.objectStore('photos'));t.oncomplete=()=>res(rq.result);t.onerror=()=>rej(t.error)}));
+  return{put:(k,v)=>tx('readwrite',s=>s.put(v,k)),get:k=>tx('readonly',s=>s.get(k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+async function shrink(f){const bm=await createImageBitmap(f);const sc=Math.min(1,1280/Math.max(bm.width,bm.height));const c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.8))}
+function loadThumbs(){document.querySelectorAll('img[data-pk]:not([src])').forEach(im=>{im.src='data:,';idb.get(im.dataset.pk).then(b=>{if(b)im.src=URL.createObjectURL(b);else im.remove()}).catch(()=>{})})}
+new MutationObserver(loadThumbs).observe(document.body,{childList:true,subtree:true});
+function drawPend(card){const ph=card._ph,pv=card.querySelector('[data-prev]');pv.innerHTML='';['food','proof'].forEach(kind=>ph[kind].forEach((f,i)=>{const im=document.createElement('img');im.src=URL.createObjectURL(f);im.alt=(kind==='proof'?'주문내역':'음식')+' 사진, 눌러서 빼기';im.dataset.pend=kind+'|'+i;pv.appendChild(im)}))}
+document.addEventListener('change',e=>{const inp=e.target.closest('input[data-ph]');if(!inp)return;const card=inp.closest('[data-card]');card._ph=card._ph||{food:[],proof:[]};const kind=inp.dataset.ph;const add=[...inp.files].slice(0,5-card._ph[kind].length);if(inp.files.length>add.length)toast('각 5장까지 올릴 수 있어요');card._ph[kind].push(...add);inp.value='';drawPend(card)});
+document.addEventListener('click',e=>{
+  const pe=e.target.closest('img[data-pend]');if(pe){const card=pe.closest('[data-card]');const [kind,i]=pe.dataset.pend.split('|');card._ph[kind].splice(+i,1);drawPend(card);return}
+  const im=e.target.closest('img[data-pk]');if(!im)return;const k=im.dataset.pk;
+  const v=document.createElement('div');v.className='viewer';v.innerHTML=`<img src="${im.src}" alt="${esc(im.alt)}"><div class="row"><button class="btn ghost" data-vx="del">사진 삭제</button><button class="btn" data-vx="close">닫기</button></div>`;document.body.appendChild(v);
+  v.onclick=async ev=>{const b=ev.target.closest('[data-vx]');if(!b&&ev.target!==v)return;if(b&&b.dataset.vx==='del'){await idb.del(k);Object.values(S.rates).forEach(rs=>rs.forEach(r=>{if(r.photos){r.photos=r.photos.filter(q=>q.k!==k);if(!r.photos.length)delete r.photos}}));save();im.remove();toast('사진을 삭제했습니다')}v.remove()};
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('cand'))e.target.click()});
 $('#go').onclick=doShare;$('#clr').onclick=()=>{$('#paste').value='';$('#out').innerHTML=''};
