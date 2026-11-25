@@ -88,6 +88,7 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearT
 const TAGS=['옵션 장난','양 줄이기','가격 꼼수','누락','식어서 옴','늦은 배달','위생','불친절','리뷰이벤트 강요'];
 const OWN={'옵션 장난':'옵션 구성과 가격이 메뉴 설명과 달라 혼란스러웠습니다. 옵션 내용을 더 분명하게 표시해 주세요.','양 줄이기':'양이 가격에 비해 적다고 느꼈습니다. 구성 한번 점검 부탁드립니다.','가격 꼼수':'표시된 가격과 실제 결제 금액이 다르게 느껴졌습니다.','누락':'주문한 메뉴 일부가 빠져서 왔습니다. 포장 전에 한 번 더 확인 부탁드립니다.','식어서 옴':'음식이 식은 상태로 도착했습니다. 포장이나 출발 시간을 점검해 주세요.','늦은 배달':'안내된 시간보다 많이 늦게 도착했습니다.','위생':'위생이 걱정되는 부분이 있었습니다. 확인 부탁드립니다.','불친절':'응대 과정에서 불친절하다고 느꼈습니다.','리뷰이벤트 강요':'리뷰 이벤트 참여를 부담스럽게 요구받는 느낌이었습니다.'};
 const LBL={c1:'조심',c2:'쓰레기',c3:'개쓰레기',avoid:'조심(남의 평가)',fav:'또 시킴'};
+const PUB={c1:'주의 1단계',c2:'주의 2단계',c3:'주의 3단계',avoid:'주의',fav:'추천'};
 const norm=s=>String(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[^0-9a-z가-힣]/g,'');
 const core=s=>norm(s).replace(/(본점|직영점|수원점|[가-힣]{1,6}점)$/,'');
 const bld=a=>String(a||'').split(',')[0].trim();
@@ -127,8 +128,8 @@ function storeCard(id,from){
   const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
   const fromTxt=from&&core(from)!==x._c?`<div class="who">배민 표시 이름 <b>${esc(from)}</b> → 실제 등록 상호 <b>${esc(x.n)}</b></div>`:'';
   const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?' · <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
-  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}</div>`).join('')}</div>`:'';
-  return `<article class="card" data-card="${esc(id)}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
+  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}${r.rant?'<br><small>화풀이(나만 보기): '+esc(r.rant)+'</small>':''}</div>`).join('')}</div>`:'';
+  return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
   <div class="meta">${esc(x.t)}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
   ${st?`<p style="margin:10px 0 0;font-weight:700">${({c1:'내가 조심으로 찍은 가게',c2:'내가 쓰레기로 찍은 가게',c3:'내가 개쓰레기로 찍은 가게',avoid:'남의 평가 보고 조심으로 담은 가게',fav:'또 시켜도 되는 가게'})[st]||''}</p>`:''}
   ${fromTxt}${sameTxt}${hist}
@@ -209,7 +210,7 @@ document.addEventListener('click',e=>{
   if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
   if(['tell','owner','cs'].includes(act)){
     const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';
-    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${LBL[S.lists[id]]||'기록만'}  맛 ${r.taste} / 양·가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+(r.memo?`\n${r.memo}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
+    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}  맛 ${r.taste} / 양·가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+(r.memo?`\n${r.memo}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
     if(act==='owner'){ttl='사장님께 (배민 리뷰나 사장님 메시지에 붙여넣기)';t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+(r.memo?`\n${r.memo}`:'')+`\n개선되면 다시 주문해 보겠습니다.`}
     if(act==='cs'){ttl='배민 고객센터에 보낼 내용';t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}`+(r.memo?`\n내용: ${r.memo}`:'')+`\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
     card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}</div>`;
