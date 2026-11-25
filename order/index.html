@@ -55,6 +55,7 @@ label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
 <div class="wrap">
 <h1>주문 전에<b>!</b></h1>
 <p class="sub">수원시 테스트판. 배민에서 공유한 글을 붙여넣으면 내 기록과 가게 정보를 보여줍니다</p>
+<div class="row" id="instbox" hidden style="margin:0 0 8px"><button class="btn red" id="inst">앱 설치하기</button><span class="hint" style="align-self:center">설치해야 배민 공유 목록에 나옵니다</span></div>
 <nav class="tabs"><button data-t="share" class="on">공유 확인</button><button data-t="search">가게 검색</button><button data-t="list">내 기록</button></nav>
 
 <section id="v-share">
@@ -245,4 +246,4 @@ fetch('/order/suwon.json').then(r=>r.json()).then(d=>{
   $('#dnote').textContent='데이터: 행정안전부 식품_일반음식점(수원시, 영업/정상 '+DB.length.toLocaleString()+'곳). 내 기록은 이 기기 브라우저에만 저장되는 테스트판입니다.';
 }).catch(()=>{$('#dnote').textContent='데이터를 불러오지 못했습니다. 새로고침해 주세요.'});
 }
-</script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/order/sw.js',{scope:'/order/'}).catch(()=>{})</script></body></html>
+</script><script>{let ev;addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;document.getElementById('instbox').hidden=false});document.getElementById('inst').onclick=async()=>{if(!ev)return;ev.prompt();await ev.userChoice;ev=null;document.getElementById('instbox').hidden=true};addEventListener('appinstalled',()=>{document.getElementById('instbox').hidden=true})}</script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/order/sw.js',{scope:'/order/'}).catch(()=>{})</script></body></html>
