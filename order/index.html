@@ -47,6 +47,7 @@ label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
 .sect{font:900 17px "Noto Sans KR";margin:22px 0 4px;display:flex;align-items:center;gap:8px}
 .sect i{font-style:normal;font:500 12px "Noto Sans KR";color:var(--mute)}
 .empty{color:var(--mute);font-size:13px;padding:10px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#fff;border-radius:999px;font:500 13px "Noto Sans KR";color:var(--sub);cursor:pointer}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
 .note{font-size:11px;color:var(--mute);margin-top:24px}
@@ -60,7 +61,7 @@ label.l{font-size:13px;font-weight:700;display:block;margin:12px 0 4px}
 <label class="l" for="paste">배민 공유 내용 붙여넣기</label>
 <textarea id="paste" placeholder="예) [배달의민족] 클로드반점 https://s.baemin.com/..."></textarea>
 <div class="row"><button class="btn" id="go">확인하기</button><button class="btn ghost" id="clr">지우기</button></div>
-<p class="hint">링크는 가게를 알아보는 열쇠로만 저장합니다. 링크 속 페이지는 열지 않습니다.</p>
+
 <div id="out"></div>
 </section>
 
@@ -84,6 +85,8 @@ let S={links:{},rates:{},lists:{}};
 try{const r=localStorage.getItem('sonjul.v1');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
 const save=()=>{try{localStorage.setItem('sonjul.v1',JSON.stringify(S))}catch(e){}};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)};
+const TAGS=['옵션 장난','양 줄이기','가격 꼼수','누락','식어서 옴','늦은 배달','위생','불친절','리뷰이벤트 강요'];
+const OWN={'옵션 장난':'옵션 구성과 가격이 메뉴 설명과 달라 혼란스러웠습니다. 옵션 내용을 더 분명하게 표시해 주세요.','양 줄이기':'양이 가격에 비해 적다고 느꼈습니다. 구성 한번 점검 부탁드립니다.','가격 꼼수':'표시된 가격과 실제 결제 금액이 다르게 느껴졌습니다.','누락':'주문한 메뉴 일부가 빠져서 왔습니다. 포장 전에 한 번 더 확인 부탁드립니다.','식어서 옴':'음식이 식은 상태로 도착했습니다. 포장이나 출발 시간을 점검해 주세요.','늦은 배달':'안내된 시간보다 많이 늦게 도착했습니다.','위생':'위생이 걱정되는 부분이 있었습니다. 확인 부탁드립니다.','불친절':'응대 과정에서 불친절하다고 느꼈습니다.','리뷰이벤트 강요':'리뷰 이벤트 참여를 부담스럽게 요구받는 느낌이었습니다.'};
 const LBL={c1:'조심',c2:'쓰레기',c3:'개쓰레기',avoid:'조심(남의 평가)',fav:'또 시킴'};
 const norm=s=>String(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[^0-9a-z가-힣]/g,'');
 const core=s=>norm(s).replace(/(본점|직영점|수원점|[가-힣]{1,6}점)$/,'');
@@ -124,13 +127,14 @@ function storeCard(id,from){
   const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
   const fromTxt=from&&core(from)!==x._c?`<div class="who">배민 표시 이름 <b>${esc(from)}</b> → 실제 등록 상호 <b>${esc(x.n)}</b></div>`:'';
   const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?' · <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
-  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' · 응대 '+r.svc:''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}</div>`).join('')}</div>`:'';
+  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)} · 맛 ${r.taste} · 양·가격 ${r.qty} · 배달 ${r.deliv}${r.svc?' / 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br><small>'+esc(r.memo)+'</small>':''}</div>`).join('')}</div>`:'';
   return `<article class="card" data-card="${esc(id)}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
   <div class="meta">${esc(x.t)}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
   ${st?`<p style="margin:10px 0 0;font-weight:700">${({c1:'내가 조심으로 찍은 가게',c2:'내가 쓰레기로 찍은 가게',c3:'내가 개쓰레기로 찍은 가게',avoid:'남의 평가 보고 조심으로 담은 가게',fav:'또 시켜도 되는 가게'})[st]||''}</p>`:''}
   ${fromTxt}${sameTxt}${hist}
   <div class="dash"></div>
   <div class="row"><button class="btn" data-act="rate">평가하기</button><button class="btn amber" data-act="avoid">${st==='avoid'?'조심 해제':'조심 담기'}</button>${st?'<button class="btn ghost" data-act="clear">기록에서 빼기</button>':''}</div>
+  ${rs.length?'<div class="row"><button class="btn ghost" data-act="tell">친구에게</button><button class="btn ghost" data-act="owner">사장님께</button><button class="btn ghost" data-act="cs">고객센터</button></div>':''}
   <div class="rbox"></div></article>`;
 }
 
@@ -140,7 +144,8 @@ function rateForm(){
   return `<div class="dash"></div>
   ${seg('taste',{t:'맛',v:three})}${seg('qty',{t:'양·가격',v:three})}${seg('deliv',{t:'배달 상태',v:three})}
   ${seg('svc',{t:'응대 (선택)',v:[[0,'연락 없음'],[1,'1'],[2,'2'],[3,'3']]})}
-  <label class="l">메모 (공개 전환 시 욕설 불가)</label><input data-f="memo" placeholder="예) 짜장면이 다 식어서 옴, 고기 거의 없음">
+  <label class="l">화난 이유 (여러 개 고를 수 있어요)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div>
+  <label class="l">메모</label><input data-f="memo" placeholder="무슨 일이 있었는지 짧게">
   <label class="l">화풀이 칸 · 나만 보기</label><textarea data-f="rant" placeholder="여기는 아무도 안 봅니다. 마음껏 쓰세요."></textarea>
   <div class="row"><button class="btn" data-act="saverate">기록하기</button></div>`;
 }
@@ -166,7 +171,7 @@ function doShare(){
 let LAST=null;
 function showCands(list,url,name){
   $('#out').innerHTML=`<div class="card"><div class="meta">공유된 가게 이름</div><h2>${esc(name||'(이름 못 읽음)')}</h2>
-  <div class="meta">${url?'링크 확인됨 · 처음 보는 가게예요':'링크가 없어요 · 이름으로만 찾습니다'}</div><div class="dash"></div>
+  <div class="meta">${url?'처음 보는 가게입니다':'링크 없이 이름으로 찾았습니다'}</div><div class="dash"></div>
   <b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,url||'name:'+norm(name))}</div>`;
 }
 
@@ -197,16 +202,29 @@ document.addEventListener('click',e=>{
     const host=cd.closest('section');
     if(host.id==='v-share')render(id,from);else{host.querySelector('#sout,#lout').innerHTML=storeCard(id,'')}
     return}
+  const chp=e.target.closest('.chip');if(chp){chp.classList.toggle('on');return}
   const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
   const ab=e.target.closest('[data-act]');if(!ab)return;
   const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
   if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
+  if(['tell','owner','cs'].includes(act)){
+    const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';
+    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${LBL[S.lists[id]]||'기록만'}  맛 ${r.taste} / 양·가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+(r.memo?`\n${r.memo}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
+    if(act==='owner'){ttl='사장님께 (배민 리뷰나 사장님 메시지에 붙여넣기)';t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+(r.memo?`\n${r.memo}`:'')+`\n개선되면 다시 주문해 보겠습니다.`}
+    if(act==='cs'){ttl='배민 고객센터에 보낼 내용';t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}`+(r.memo?`\n내용: ${r.memo}`:'')+`\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
+    card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}</div>`;
+    return}
+  if(act==='copy'||act==='send'){
+    const v=card.querySelector('[data-f=gen]').value;
+    const cp=()=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('복사했습니다')).catch(()=>{const ta=card.querySelector('[data-f=gen]');ta.select();try{document.execCommand('copy');toast('복사했습니다')}catch(e){toast('길게 눌러 복사해 주세요')}})};
+    if(act==='send'&&navigator.share){navigator.share({text:v}).catch(()=>{})}else cp();
+    return}
   if(act==='rate'){const rb=card.querySelector('.rbox');rb.innerHTML=rb.innerHTML?'':rateForm();return}
   if(act==='avoid'){if(S.lists[id]==='avoid')delete S.lists[id];else S.lists[id]='avoid';save();rerenderCard(card);toast(S.lists[id]?'조심에 담았습니다':'해제했습니다');return}
   if(act==='clear'){delete S.lists[id];save();rerenderCard(card);return}
   if(act==='saverate'){
     const v=k=>{const b=card.querySelector(`.seg[data-k=${k}] .on`);return b?+b.dataset.v:null};
-    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim()};
+    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:[...card.querySelectorAll('.chip.on')].map(b=>b.dataset.tag)};
     if(!r.taste||!r.qty||!r.deliv){toast('맛 · 양·가격 · 배달 상태는 꼭 골라주세요');return}
     if(/씨발|시발|존나|좆|병신|개새|ㅅㅂ|ㅂㅅ/.test(r.memo)){toast('메모에 욕설이 있어요. 화풀이 칸에 써주세요');return}
     (S.rates[id]=S.rates[id]||[]).push(r);
