@@ -83,6 +83,8 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 .onb p{margin:0;color:var(--sub);font-size:15px}
 .mock{background:var(--tile);border-radius:20px;height:250px;position:relative;overflow:hidden}
 .dots{display:flex;gap:6px;justify-content:center;margin:14px 0}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--red)}
+.who.red{background:#ffd3cb;color:#7a1d10}.who.gray{background:#fff;border:1px solid var(--line)}.who summary{color:var(--sub);font-size:13px}
+.regs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .rank{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.rank .n{font:400 26px "Black Han Sans";width:28px;color:var(--blue)}
 </style></head><body>
 <div class="wrap">
@@ -130,14 +132,15 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 <p class="hint" style="margin-top:4px">브라우저 데이터를 지우면 기록도 사라집니다. 가끔 파일로 저장해 두세요</p>
 <div class="row"><button class="btn ghost" id="exp">기록 파일로 저장</button><label class="btn ghost phbtn">파일에서 불러오기<input type="file" id="imp" accept="application/json" hidden></label></div>
 <div class="row"><button class="btn ghost" data-soon="2">로그인하고 기록 지키기<span class="soon">준비 중</span></button></div>
+<div class="row"><button class="btn ghost" id="regbtn">내 지역: <span id="myreg">수원시</span></button></div>
 <div class="row"><button class="btn ghost" id="exdel">예시 지우기</button><button class="btn ghost" id="howto">사용법 다시 보기</button></div></div>
 </section>
 
 <section id="v-town" hidden>
 <div class="logo">동네</div>
-<p class="sub">우리 동네에서 추천 많이 받은 가게<span class="soon">5단계 준비 중</span></p>
+<p class="sub">관련 글이 많은 가게<span class="soon">5단계 준비 중</span></p>
 <div class="card" id="tout"></div>
-<p class="hint">지금은 예시 화면입니다. 공개 후기가 쌓이면 실제 순위로 바뀝니다. 비추천 순위는 만들지 않습니다</p>
+<p class="hint">글이 많다는 것은 좋거나 나쁘다는 뜻이 아닙니다. 들어가서 직접 읽고 판단하세요. 지금은 예시 화면입니다</p>
 </section>
 
 <p class="note" id="dnote">데이터 불러오는 중</p>
@@ -149,7 +152,7 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 {
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let DB=[],BYID={},BYBLD={};
+let DB=[],BYID={},BYBLD={},BYUNIT={};
 let S={links:{},rates:{},lists:{}};
 try{const r=localStorage.getItem('sonjul.v1');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
 Object.keys(S.lists).forEach(k=>{if(S.lists[k]==='avoid')S.lists[k]='next'});
@@ -165,6 +168,18 @@ const norm=s=>String(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace
 const core=s=>norm(s).replace(/(본점|직영점|수원점|[가-힣]{1,6}점)$/,'');
 const bld=a=>String(a||'').split(',')[0].trim();
 const big=s=>{const o=new Set();for(let i=0;i<s.length-1;i++)o.add(s.slice(i,i+2));return o};
+const unitOf=a=>{const i=String(a||'').indexOf(',');if(i<0)return '';return a.slice(i+1).replace(/\([^)]*\)\s*$/,'').trim()};
+const dice=(a,b)=>{const A=big(a),B=big(b);if(!A.size||!B.size)return 0;let n=0;A.forEach(x=>{if(B.has(x))n++});return 2*n/(A.size+B.size)};
+function nameRel(from,x){if(core(from)===x._c||norm(from)===x._n)return 'same';
+  const fb=norm(String(from).split(/\s+/)[0]),xb=norm(String(x.n).split(/\s+/)[0]);if(fb.length>=2&&fb===xb)return 'branch';
+  return dice(core(from)||norm(from),x._c||x._n)<.25?'diff':'partial'}
+function relBox(from,x){const r=nameRel(from,x);
+  const head=`${SRC} 표시 이름 <b>${esc(from)}</b><br>등록 상호 <b>${esc(x.n)}</b>`;
+  if(r==='same')return `<div class="who">${head} (같음)</div>`;
+  if(r==='branch')return `<div class="who red">${head}<br><b>지점 이름이 다릅니다.</b> ${SRC} 매장정보의 주소가 <b>${esc(x.a)}</b>와 같은지 확인하세요</div>`;
+  if(r==='diff')return `<div class="who red">${head}<br><b>배달앱 이름과 등록 상호가 완전히 다릅니다.</b> 다른 상호로 신고하고 배달앱에서는 다른 이름으로 영업하는 가게일 수 있습니다</div>`;
+  return `<div class="who">${head}<br>이름이 조금 다릅니다. 주소로 한 번 더 확인하세요</div>`}
+const HOWNAME=`<div class="who gray"><b>배달앱 이름은 등록 상호가 아닐 수 있습니다</b><br>배민은 가게정보·원산지, 쿠팡이츠는 매장·원산지정보에서 <b>상호명</b>과 주소를 확인해 그 이름이나 주소(도로명과 번지)로 찾아보세요<div class="row"><button class="btn ghost" data-soon="2">전국에서 찾기<span class="soon">준비 중</span></button></div></div>`;
 
 /* 예시 가게와 예시 후기 (전부 가상) */
 const EXS=[
@@ -178,7 +193,7 @@ const PREV={
        good:[{k:'추천',d:'2026-11-19',x:'양념 맛이 진하고 튀김이 바삭했습니다. 양도 가격에 비해 넉넉한 편입니다.',c:1,s:3}]},
  ex3:{bad:[{k:'주의 1단계',d:'2026-11-02',x:'안내된 시간보다 40분 정도 늦게 도착했습니다.',c:0,s:1}],
        good:[{k:'추천',d:'2026-11-20',x:'짬뽕 국물이 진하고 해물이 넉넉합니다. 포장 상태도 깔끔했습니다.',c:1,s:21},{k:'추천',d:'2026-11-08',x:'탕수육 소스를 따로 담아 줘서 눅눅하지 않았습니다.',c:1,s:9}]}};
-const TOWN=[{id:'ex3',g:28},{id:'ex4',g:17},{id:'ex5',g:9}];
+const TOWNX={ex4:14,ex5:6};
 function seedEx(){if(S.exSeeded)return;S.exSeeded=1;
  S.rates.ex1=[{d:'2026-11-20',taste:1,qty:1,deliv:2,svc:0,tags:['누락','식어서 옴'],memo:'치킨무 누락, 반은 식어서 옴',rant:'진짜 개빡치네. 다시는 안 시킴'}];S.lists.ex1='c2';
  S.rates.ex3=[{d:'2026-11-18',taste:3,qty:3,deliv:3,svc:3,tags:[],memo:'짬뽕 국물 진함. 양 넉넉',rant:''}];S.lists.ex3='fav';
@@ -194,8 +209,8 @@ function score(q,item){
 }
 function find(q,lim=12){
   const raw=q.trim(),nq=core(q)||norm(q);
-  const addr=raw.length>=2&&/[동로길가읍면리]$/.test(raw);
-  return DB.map(x=>[Math.max(score(nq,x),addr&&x.a.includes(raw)?70:0),x]).filter(p=>p[0]>=25).sort((p,r)=>r[0]-p[0]).slice(0,lim).map(p=>p[1]);
+  const ra=raw.replace(/\s/g,''),addr=ra.length>=2&&(/[동로길가읍면리]$/.test(ra)||/(로|길)\d/.test(ra));
+  return DB.map(x=>[Math.max(score(nq,x),addr&&x._a.includes(ra)?(/\d$/.test(ra)?90:70):0),x]).filter(p=>p[0]>=25).sort((p,r)=>r[0]-p[0]).slice(0,lim).map(p=>p[1]);
 }
 function parseShare(t){
   const m=t.match(/https?:\/\/\S+/);let url=m?m[0].replace(/[)\]>.,]+$/,''):'';
@@ -217,7 +232,7 @@ function show(v){if(v!=='store'&&VIEW!=='store')PREVV=VIEW;else if(v==='store'&&
   if(v==='list')renderList();if(v==='before')renderBefore();if(v==='town')renderTown();scrollTo(0,0)}
 
 function candList(list,key){
-  if(!list.length)return '<p class="empty">비슷한 이름의 영업 중인 가게를 못 찾았습니다. 이름을 줄이거나 동 이름으로 찾아보세요.</p>';
+  if(!list.length)return '<p class="empty">못 찾았습니다.</p>'+HOWNAME;
   return list.map(x=>`<div class="cand" data-id="${esc(x.id)}" data-key="${esc(key||'')}" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${esc(x.t)}, ${esc(x.a)}</small></span><span class="pick">${key?'이 가게예요':'열기'}</span></div>`).join('');
 }
 
@@ -241,9 +256,12 @@ function pubBlock(id){
 function storeCard(id,from,mode){
   const x=BYID[id];if(!x)return '';
   const st=S.lists[id];const rs=S.rates[id]||[];
-  const same=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id);
-  const fromTxt=from?`<div class="who">${SRC} 표시 이름 <b>${esc(from)}</b><br>등록 상호 <b>${esc(x.n)}</b>${core(from)===x._c||norm(from)===x._n?' (같음)':''}</div>`:'';
-  const sameTxt=same.length?`<div class="who">같은 건물에 등록된 음식점 ${same.length}곳. 같은 주방일 수 있습니다<ul>${same.slice(0,8).map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)})</small>${S.lists[y.id]?', <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('')}${same.length>8?`<li>외 ${same.length-8}곳</li>`:''}</ul></div>`:'';
+  const uk=x._u?bld(x.a)+'|'+x._u.replace(/\s/g,''):'';const su=uk?(BYUNIT[uk]||[]).filter(y=>y.id!==id):[];const sids=new Set(su.map(y=>y.id));
+  const sb=(BYBLD[bld(x.a)]||[]).filter(y=>y.id!==id&&!sids.has(y.id));
+  const li=ys=>ys.map(y=>`<li>${esc(y.n)} <small>(${esc(y.t)}${y._u?', '+esc(y._u):''})</small>${S.lists[y.id]?', <b>'+LBL[S.lists[y.id]]+'</b>':''}</li>`).join('');
+  const fromTxt=from?relBox(from,x):'';
+  const sameTxt=(su.length?`<div class="who red"><b>같은 자리(${esc(x._u)})에 등록된 가게 ${su.length}곳.</b> 같은 주방일 가능성이 높습니다<ul>${li(su)}</ul></div>`:'')
+   +(sb.length?`<details class="who gray"><summary>같은 건물 음식점 ${sb.length}곳</summary><ul>${li(sb)}</ul></details>`:'');
   const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)}, 맛 ${r.taste}, 양과 가격 ${r.qty}, 배달 ${r.deliv}${r.svc?', 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br>'+esc(r.memo):''}${r.rant?'<br><small>화풀이: '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
   const openForm=mode==='after'&&!rs.length;
   return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}" data-mode="${mode||''}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
@@ -265,38 +283,44 @@ function rateForm(){
   <div class="tagbox" hidden><label class="l">뭐가 빡쳤음? (여러 개 가능)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div></div>
   <label class="l">메모</label><input data-f="memo" placeholder="무슨 일이 있었는지 짧게">
   <label class="l">화풀이 칸 (나만 봄, 욕해도 됨)</label><textarea data-f="rant" placeholder="여긴 아무도 못 봅니다. 시원하게 쓰세요"></textarea>
-  <label class="l">사진 (나만 봄, 각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div><div class="phs" data-prev></div>
+  <label class="l">증거 사진 (각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div>
+  <p class="hint">음식 사진은 공개 글과 고객센터에 첨부됩니다. 주문내역 캡처는 인증용이라 공개되지 않고 "주문 인증" 표시만 붙습니다. 주소, 전화번호, 얼굴이 찍혔다면 가리고 올리세요</p><div class="phs" data-prev></div>
   <div class="row"><button class="btn red big wide" data-act="saverate">기록하기</button></div>`;
 }
 
 function nextSteps(card,id){
-  const st=S.lists[id],low=/^c/.test(st||'');
+  const st=S.lists[id],low=/^c/.test(st||'');const lr=(S.rates[id]||[]).slice(-1)[0]||{};const np=(lr.photos||[]).filter(q=>q.kind==='food').length;
   card.querySelector('.rbox').innerHTML=`<div class="dash"></div><b>${low?'다음 할 일':'좋은 집은 알려야죠'}</b><div class="next">
-  ${low?'<button class="btn red big" data-act="cs">보상 요청하기 (고객센터)</button><button class="btn big" data-act="owner">사장님께 한마디</button><button class="btn ghost big" data-act="tell">친구에게 알리기</button>':'<button class="btn big" data-act="tell">친구에게 추천하기</button>'}
+  ${low?'<button class="btn red big" data-act="cs">보상 요청하기 (고객센터)'+(np?', 사진 '+np+'장 함께':'')+'</button><button class="btn big" data-act="owner">사장님께 한마디</button><button class="btn ghost big" data-act="tell">친구에게 알리기</button>':'<button class="btn big" data-act="tell">친구에게 추천하기</button>'}
   <button class="btn ghost big" data-act="public">모두에게 공개하기<span class="soon">3단계 준비 중</span></button></div>
   ${low?'<p class="hint">보상은 시간이 지나면 어려워집니다. 고객센터부터 먼저 하세요</p>':''}`;
 }
 
-function show_store(id,from,mode){const el=$('#sout');el.innerHTML=storeCard(id,from,mode);if(VIEW!=='store')show('store');else scrollTo(0,0)}
+function show_store(id,from,mode){S.recent=[id].concat((S.recent||[]).filter(i=>i!==id)).slice(0,20);save();const el=$('#sout');el.innerHTML=storeCard(id,from,mode);if(VIEW!=='store')show('store');else scrollTo(0,0)}
 function rerenderCard(card){const id=card.dataset.card,from=card.dataset.from,mode='';const pub=card.nextElementSibling&&card.nextElementSibling.classList.contains('pub')?card.nextElementSibling:null;if(pub)pub.remove();card.outerHTML=storeCard(id,from,mode)}
 
 function doShare(t){
   t=(t||'').trim();if(!t){toast('공유 내용을 붙여넣어 주세요');return}
   const {url,name}=parseShare(t);SRC=String(url).startsWith('ce:')?'쿠팡이츠':'배민';
-  const pick=id=>{const has=(S.rates[id]||[]).length||S.lists[id];MODE=has?'before':'after';show_store(id,name,MODE);if(has)toast('전에 기록한 가게예요')};
+  const pick=id=>choose(id,name);
   if(url&&S.links[url]&&BYID[S.links[url]]){pick(S.links[url]);return}
   const list=name?find(name):[];const ex=list.filter(x=>x._n===norm(name));
   LAST={list,url,name};
-  if(ex.length===1){if(url){S.links[url]=ex[0].id;save()}pick(ex[0].id);
-    $('#sout').insertAdjacentHTML('beforeend','<div class="row"><button class="btn ghost" data-act="wrong">이 가게가 아니에요</button></div>');return}
+  if(ex.length===1){if(url){S.links[url]=ex[0].id;save()}pick(ex[0].id);return}
   showCands(list,url,name);
 }
+function choose(id,from){const x=BYID[id],st=S.lists[id],n=(S.rates[id]||[]).length;
+  $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유${x.ex?'<span class="ex">예시</span>':''}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>${from?relBox(from,x):''}</div>
+  <div class="split"><button class="half w" data-pick="before" data-id="${esc(id)}" data-from="${esc(from||'')}"><span><big>주문 전에</big><small>${st?'<b style="color:var(--red)">'+LBL[st]+' 딱지 있음</b><br>':''}${n?'내 기록 '+n+'개':'내 기록 없음'}<br>같은 주방, 후기 확인</small></span><span class="go">확인하기 →</span></button>
+  <button class="half r" data-pick="after" data-id="${esc(id)}" data-from="${esc(from||'')}"><span><big>주문 후에</big><small>먹어 봤으면<br>바로 평가</small></span><span class="go">기록하기 →</span></button></div>
+  <div class="row"><button class="btn ghost" data-act="wrong">이 가게가 아니에요</button></div>`;
+  if(VIEW!=='store')show('store');else scrollTo(0,0)}
 function showCands(list,url,name){
   const key=url||'name:'+norm(name);
   $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유</div><h2>처음 보는 가게입니다</h2>
-  ${name&&list[0]?`<div class="who">${SRC} 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div>`:''}
+  ${name&&list[0]&&dice(core(name)||norm(name),list[0]._c||list[0]._n)>=.5?`<div class="who">${SRC} 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div>`:''}
   ${name?'':'<p class="meta">링크에 가게 이름이 없어요. 한 번만 찾아 주시면 다음부터 바로 연결됩니다</p>'}
-  ${list.length?`<div class="dash"></div><b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}`:''}
+  ${list.length?`<div class="dash"></div><b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}${HOWNAME}`:HOWNAME}
   <div class="dash"></div><label class="l" for="cq">${list.length?'목록에 없으면 직접 찾기':'가게 찾기'}</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름, 동, 도로명"><div id="cqout"></div></div>`;
   if(VIEW!=='store')show('store');
 }
@@ -310,14 +334,21 @@ function renderBefore(){
   $('#bquick').innerHTML=q?'':`<div class="sect">조심할 가게 <i>${warn.length}곳</i></div>${warn.length?li(warn):'<p class="empty">아직 없어요</p>'}
   <div class="sect">다음 주문에 <i>${nx.length}곳, 다음에 시켜볼 가게</i></div>${nx.length?li(nx):'<p class="empty">남의 후기 보고 궁금해진 가게를 담아 두세요</p>'}`;
 }
-function renderAfter(){const q=$('#qa').value.trim();$('#aout').innerHTML=q?`<div class="card">${candList(find(q,20),'')}</div>`:'<p class="hint">가게를 고르면 바로 평가 칸이 열립니다</p>'}
+function quick(ids,sub){return ids.filter(i=>BYID[i]).map(i=>{const x=BYID[i];return `<div class="cand" data-id="${esc(i)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${sub(i,x)}</small></span><span class="pick">${VIEW==='after'?'평가':'열기'}</span></div>`}).join('')}
+function renderAfter(){const q=$('#qa').value.trim();
+  if(q){$('#aout').innerHTML=`<div class="card">${candList(find(q,20),'')}</div>`;return}
+  const rec=(S.recent||[]).slice(0,10),nx=Object.entries(S.lists).filter(([i,v])=>v==='next').map(([i])=>i),done=Object.keys(S.rates).filter(i=>!rec.includes(i));
+  $('#aout').innerHTML=`<div class="sect">방금 본 가게 <i>최근 순</i></div>${rec.length?quick(rec,(i,x)=>(S.lists[i]?LBL[S.lists[i]]+', ':'')+esc(bld(x.a))):'<p class="empty">주문 전에에서 본 가게가 여기 먼저 떠요</p>'}
+  <div class="sect">다음 주문에 <i>${nx.length}곳</i></div>${nx.length?quick(nx,(i,x)=>esc(bld(x.a))):'<p class="empty">아직 없어요</p>'}
+  <div class="sect">전에 기록한 가게 <i>${done.length}곳</i></div>${done.length?quick(done,(i,x)=>(S.lists[i]?LBL[S.lists[i]]+', ':'')+esc(bld(x.a))):'<p class="empty">아직 없어요</p>'}`}
 function renderList(){
   const groups={c3:[],c2:[],c1:[],fav:[],next:[]};
   Object.entries(S.lists).forEach(([id,k])=>{if(BYID[id]&&groups[k])groups[k].push(id)});
   const sec=(k,title,desc)=>`<div class="sect">${title} <i>${groups[k].length}곳, ${desc}</i></div>${groups[k].length?groups[k].map(id=>{const x=BYID[id];const r=(S.rates[id]||[]).slice(-1)[0];return `<div class="cand" data-id="${esc(id)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${r?esc(r.d)+(r.memo?', '+esc(r.memo):''):esc(bld(x.a))}</small></span><span class="pick">열기</span></div>`}).join(''):'<p class="empty">아직 없어요</p>'}`;
   $('#lout').innerHTML=sec('c3','개쓰레기','세 항목 모두 1점')+sec('c2','쓰레기','1점 두 개')+sec('c1','조심','1점 한 개')+sec('fav','또 시킴','세 항목 모두 3점')+sec('next','다음 주문에','다음에 시켜볼 가게');
 }
-function renderTown(){$('#tout').innerHTML=TOWN.map((r,i)=>{const x=BYID[r.id];return `<div class="rank cand" data-id="${r.id}" data-key=""><span class="n">${i+1}</span><span style="flex:1"><b>${esc(x.n)}<span class="ex">예시</span></b><small>추천 ${r.g}, ${esc(bld(x.a))}</small></span></div>`}).join('')}
+function renderTown(){const t=EXS.map(x=>({id:x.id,n:PREV[x.id]?PREV[x.id].bad.length+PREV[x.id].good.length:(TOWNX[x.id]||0)})).filter(r=>r.n).sort((a,b)=>b.n-a.n);
+  $('#tout').innerHTML=t.map(r=>{const x=BYID[r.id];return `<div class="cand" data-id="${r.id}" data-key="" tabindex="0"><span><b>${esc(x.n)}<span class="ex">예시</span></b><small>관련 글 ${r.n}개, ${esc(bld(x.a))}</small></span><span class="pick" style="background:var(--ink)">보기</span></div>`}).join('')}
 
 /* 사용법 안내 */
 const ONB=[
@@ -325,9 +356,17 @@ const ONB=[
  {h:'목록에서 주문 전에',p:'처음 한 번은 목록 끝의 모두 보기 안에 있어요. 그다음부턴 앞쪽에 떠요',m:'<div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:#2b2c31;border-radius:20px 20px 0 0;display:flex;gap:14px;justify-content:center;align-items:center"><i style="width:44px;height:44px;border-radius:12px;background:#555"></i><i style="width:44px;height:44px;border-radius:12px;background:#e8402f;outline:3px solid #fff;outline-offset:3px"></i><i style="width:44px;height:44px;border-radius:12px;background:#555"></i><i style="width:44px;height:44px;border-radius:12px;background:#555"></i></div>'},
  {h:'주문 전엔 확인, 주문 후엔 기록',p:'기록한 가게면 경고가 먼저 뜨고, 처음 보는 가게면 바로 평가 칸이 열려요',m:'<div style="position:absolute;inset:30px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="border:2px solid #16171b;border-radius:16px;background:#fff;padding:12px;font:400 20px Black Han Sans,sans-serif">주문<br>전에</div><div style="background:#e8402f;color:#fff;border-radius:16px;padding:12px;font:400 20px Black Han Sans,sans-serif">주문<br>후에</div></div>'},
  {h:'욕은 나만, 밖으론 점잖게',p:'내 기록엔 마음껏 쓰세요. 친구, 사장님, 고객센터로 나가는 글은 앱이 알아서 존댓말로 바꿔 줘요',m:'<div style="position:absolute;inset:24px 20px auto;background:#fff;border-radius:14px;padding:12px;font-size:13px">화풀이: 진짜 개빡치네</div><div style="position:absolute;top:96px;left:0;right:0;text-align:center;font-size:22px">↓</div><div style="position:absolute;inset:130px 20px auto;background:#ffe3de;border-radius:14px;padding:12px;font-size:13px">주문한 메뉴 일부가 빠져서 왔습니다. 확인 부탁드립니다.</div>'}];
+const REGS=['수원시','서울특별시','성남시','용인시','화성시','안양시','오산시','부천시','고양시','인천광역시'];
+function regionPick(){const o=document.createElement('div');o.className='onb';o.setAttribute('role','dialog');o.setAttribute('aria-label','지역 선택');document.body.appendChild(o);
+ const cur=S.regions||['수원시'];
+ o.innerHTML=`<div class="pg"><h4>주로 시키는 지역</h4><p>집, 회사 근처 등 여러 곳을 고를 수 있어요. 고른 지역 가게만 받아서 빠르고 정확해집니다</p>
+ <div class="regs">${REGS.map(r=>`<button class="chip ${cur.includes(r)?'on':''}" data-reg="${r}">${r}${r==='수원시'?'':'<span class="soon">준비 중</span>'}</button>`).join('')}</div>
+ <p class="hint" style="margin-top:14px">자주 보는 가게의 지역을 보고 지역 추가를 제안해 드려요<span class="soon">준비 중</span></p></div>
+ <button class="btn red big wide" data-rok>이 지역으로 시작</button>`;
+ o.querySelector('[data-rok]').onclick=()=>{const sel=[...o.querySelectorAll('[data-reg].on')].map(b=>b.dataset.reg);if(!sel.length){toast('지역을 하나 이상 골라 주세요');return}S.regions=sel;save();o.remove();$('#myreg')&&($('#myreg').textContent=sel.join(', '))}}
 function onboard(){let i=0;const o=document.createElement('div');o.className='onb';o.setAttribute('role','dialog');o.setAttribute('aria-label','사용법 안내');document.body.appendChild(o);
  const draw=()=>{const s=ONB[i];o.innerHTML=`<div style="text-align:right"><button class="back" data-o="skip">건너뛰기</button></div><div class="pg"><div class="mock">${s.m}</div><h4>${i+1}. ${s.h}</h4><p>${s.p}</p></div><div class="dots">${ONB.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div><button class="btn red big wide" data-o="next">${i<ONB.length-1?'다음':'시작하기'}</button>`};
- o.onclick=e=>{const b=e.target.closest('[data-o]');if(!b)return;if(b.dataset.o==='next'&&i<ONB.length-1){i++;draw();return}S.onb=1;save();o.remove()};draw()}
+ o.onclick=e=>{const b=e.target.closest('[data-o]');if(!b)return;if(b.dataset.o==='next'&&i<ONB.length-1){i++;draw();return}S.onb=1;save();o.remove();if(!S.regions)regionPick()};draw()}
 
 /* 사진 저장소 */
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const q=indexedDB.open('sonjul',1);q.onupgradeneeded=()=>q.result.createObjectStore('photos');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}));
@@ -342,6 +381,8 @@ document.addEventListener('change',e=>{const inp=e.target.closest('input[data-ph
 
 document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-nav]');if(nv){show(nv.dataset.nav);return}
+  const pk=e.target.closest('[data-pick]');if(pk){show_store(pk.dataset.id,pk.dataset.from,pk.dataset.pick);return}
+  const rg=e.target.closest('[data-reg]');if(rg){if(rg.dataset.reg!=='수원시'){toast('준비 중인 지역이에요');return}rg.classList.toggle('on');return}
   const go=e.target.closest('[data-go]');if(go){MODE=go.dataset.go;show(MODE);if(MODE==='after')renderAfter();return}
   const sn=e.target.closest('[data-soon]');if(sn){toast(sn.dataset.soon+'단계에서 열립니다');return}
   const pt=e.target.closest('[data-pt]');if(pt){const box=pt.closest('.pub'),p=PREV[box.dataset.pub];box.querySelectorAll('[data-pt]').forEach(b=>b.classList.toggle('on',b===pt));const kind=pt.dataset.pt;box.querySelector('.rvlist').innerHTML=p[kind].slice().sort((a,c)=>(c.c-a.c)||(c.s-a.s)).map(r=>`<div class="rv"><div class="h"><span class="k ${kind==='bad'?'bd':'gd'}">${esc(r.k)}</span><span>${r.c?'주문 인증':'미인증'}, ${esc(r.d)}</span></div><div style="margin-top:4px">${esc(r.x)}</div><div class="h" style="margin-top:6px"><span>${kind==='bad'?'나도 겪었어요':'나도 좋았어요'} ${r.s}</span></div>${r.rp?`<div class="rp"><b>사장님 답변</b><br>${esc(r.rp)}<br><small>${esc(r.fx||'')}</small></div>`:''}</div>`).join('');return}
@@ -350,17 +391,18 @@ document.addEventListener('click',e=>{
     v.onclick=async ev=>{const b=ev.target.closest('[data-vx]');if(!b&&ev.target!==v)return;if(b&&b.dataset.vx==='del'){await idb.del(k);Object.values(S.rates).forEach(rs=>rs.forEach(r=>{if(r.photos){r.photos=r.photos.filter(q=>q.k!==k);if(!r.photos.length)delete r.photos}}));save();im.remove();toast('사진을 삭제했습니다')}v.remove()};return}
   const cd=e.target.closest('.cand');
   if(cd){const id=cd.dataset.id,key=cd.dataset.key;let from='';
-    if(key){S.links[key]=id;save();toast('연결 저장, 다음 공유부터 바로 떠요');from=LAST&&LAST.name||''}
+    if(key){S.links[key]=id;save();toast('연결 저장, 다음 공유부터 바로 떠요');choose(id,LAST&&LAST.name||'');return}
     const mode=VIEW==='after'?'after':key?((S.rates[id]||[]).length||S.lists[id]?'before':'after'):'before';
     show_store(id,from,mode);return}
   const chp=e.target.closest('.chip[data-tag]');if(chp){chp.classList.toggle('on');return}
   const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));const card=sb.closest('[data-card]');const low=[...card.querySelectorAll('.seg[data-k=taste] .on,.seg[data-k=qty] .on,.seg[data-k=deliv] .on')].some(b=>b.dataset.v==='1');card.querySelector('.tagbox').hidden=!low;return}
   const ab=e.target.closest('[data-act]');if(!ab)return;
   const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
+  if(act==='wrong'&&!LAST)return;
   if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
   if(act==='public'){const rs=S.rates[id]||[],r=rs[rs.length-1],st=S.lists[id];const x=BYID[id];
     const t=`[${PUB[st]||'후기'}] ${x.n}\n맛 ${r.taste}/3, 양과 가격 ${r.qty}/3, 배달 ${r.deliv}/3`+(r.tags&&r.tags.length?`\n${r.tags.map(k=>OWN[k]).join(' ')}`:'');
-    card.querySelector('.rbox').insertAdjacentHTML('beforeend',`<div class="pub"><b>공개될 글 미리보기</b><span class="soon">3단계 준비 중</span><p class="hint">화풀이와 메모는 공개되지 않고, 아래처럼 존댓말로 정리됩니다. 공개하려면 주문내역 인증이 필요합니다</p><div class="rv" style="white-space:pre-line;margin-top:8px">${esc(t)}</div></div>`);ab.remove();return}
+    card.querySelector('.rbox').insertAdjacentHTML('beforeend',`<div class="pub"><b>공개될 글 미리보기</b><span class="soon">3단계 준비 중</span><p class="hint">화풀이와 메모는 공개되지 않고, 아래처럼 존댓말로 정리됩니다. 공개하려면 주문내역 인증이 필요합니다</p><div class="rv" style="margin-top:8px"><div class="h"><span class="k bd">${esc(PUB[st]||'후기')}</span><span>${(r.photos||[]).some(q=>q.kind==='proof')?'주문 인증':'미인증'}</span></div><div style="white-space:pre-line;margin-top:4px">${esc(t)}</div>${(r.photos||[]).some(q=>q.kind==='food')?`<div class="phs">${r.photos.filter(q=>q.kind==='food').map(q=>`<img data-pk="${esc(q.k)}" alt="공개될 음식 사진">`).join('')}</div>`:''}</div></div>`);ab.remove();return}
   if(['tell','owner','cs'].includes(act)){
     const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';const P=appOf(id);
     if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}, 맛 ${r.taste} / 양과 가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
@@ -402,19 +444,19 @@ document.addEventListener('input',e=>{if(e.target.id==='cq'){clearTimeout(e.targ
   if(e.target.id==='qa'){clearTimeout(e.target._t);e.target._t=setTimeout(renderAfter,200)}});
 $('#go').onclick=()=>doShare($('#paste').value);$('#clr').onclick=()=>{$('#paste').value=''};
 $('#back').onclick=()=>show(PREVV==='store'?'home':PREVV);
-$('#howto').onclick=onboard;
+$('#howto').onclick=onboard;$('#regbtn').onclick=regionPick;if(S.regions)$('#myreg').textContent=S.regions.join(', ');
 $('#exdel').onclick=()=>{EXS.forEach(x=>{delete S.rates[x.id];delete S.lists[x.id]});save();renderList();toast('예시 기록을 지웠습니다')};
 $('#exp').onclick=()=>{const b=new Blob([JSON.stringify(S)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='주문전에_기록_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('파일로 저장했습니다 (사진은 빠져요)')};
 $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);if(!d.rates)throw 0;S=Object.assign({links:{},rates:{},lists:{}},d);save();renderList();toast('기록을 불러왔습니다')}).catch(()=>toast('주문 전에 기록 파일이 아니에요'));e.target.value=''};
 
 fetch('/order/suwon.json').then(r=>r.json()).then(d=>{
   DB=EXS.map(x=>Object.assign({ex:1},x)).concat(d);
-  DB.forEach(x=>{x._n=norm(x.n);x._c=core(x.n);x._b=big(x._c||x._n);BYID[x.id]=x;(BYBLD[bld(x.a)]=BYBLD[bld(x.a)]||[]).push(x)});
+  DB.forEach(x=>{x._n=norm(x.n);x._c=core(x.n);x._b=big(x._c||x._n);x._a=x.a.replace(/\s/g,'');x._u=unitOf(x.a);BYID[x.id]=x;(BYBLD[bld(x.a)]=BYBLD[bld(x.a)]||[]).push(x);if(x._u){const k=bld(x.a)+'|'+x._u.replace(/\s/g,'');(BYUNIT[k]=BYUNIT[k]||[]).push(x)}});
   seedEx();
   let shared=false;
   try{const q=new URLSearchParams(location.search);const sh=[q.get('title'),q.get('text'),q.get('url')].filter(Boolean).join('\n');if(sh){shared=true;history.replaceState(null,'',location.pathname);doShare(sh)}}catch(e){}
-  if(!S.onb&&!shared)onboard();
-  $('#dnote').textContent='데이터: 행정안전부 식품_일반음식점(수원시, 영업/정상 '+d.length.toLocaleString()+'곳). 모루로 시작하는 가게와 후기는 화면 확인용 예시입니다.';
+  if(!S.onb&&!shared)onboard();else if(!S.regions&&!shared)regionPick();
+  $('#dnote').textContent='데이터: 행정안전부 식품_일반음식점, 휴게음식점(수원시, 영업/정상 '+d.length.toLocaleString()+'곳, 편의점 제외). 모루로 시작하는 가게와 후기는 화면 확인용 예시입니다.';
 }).catch(()=>{$('#dnote').textContent='데이터를 불러오지 못했습니다. 새로고침해 주세요.'});
 }
 </script>
