@@ -85,6 +85,14 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 .dots{display:flex;gap:6px;justify-content:center;margin:14px 0}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--red)}
 .who.red{background:#ffd3cb;color:#7a1d10}.who.gray{background:#fff;border:1px solid var(--line)}.who summary{color:var(--sub);font-size:13px}
 .regs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.src{border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}.src.gov{background:#fff;border:1px solid var(--line)}.src.app{background:var(--pink)}
+.src .sh{display:flex;justify-content:space-between;gap:4px 8px;align-items:baseline;flex-wrap:wrap}.src .sh small{color:var(--mute);font-size:11px}
+.src ul{margin:6px 0 0;padding-left:18px}.src .wr{color:var(--red);font-weight:700;margin-top:6px}.src .off{color:var(--mute)}
+.tg small{display:block;font-size:12px;color:var(--mute);margin:10px 0 4px}
+.det{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.dl{display:block;font-size:12px;color:var(--mute);margin:8px 0 4px;font-weight:500}
+.det input{padding:9px 12px;font-size:15px}.chip.sm{min-height:32px;font-size:12px}
+.calc{font-weight:700;color:var(--red);margin:6px 0 0;font-size:13px}
 .bdg{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.bdg:last-child{border:0}
 .bdg .m{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:400 15px/1 "Black Han Sans","Noto Sans KR";background:var(--line);color:var(--mute)}.bdg.on .m{background:var(--red);color:#fff}
 .bdg b{display:block}.bdg small{color:var(--mute);font-size:12px}
@@ -110,6 +118,7 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 <section id="v-before" hidden>
 <div class="logo">주문 전에<b>!</b></div>
 <p class="sub">시키기 전에 한 번 확인</p>
+<div class="card" id="watchbox" style="margin:0 0 12px;padding:14px"></div>
 <input id="qb" placeholder="가게 이름, 동, 도로명">
 <div id="bout"></div>
 <div id="bquick"></div>
@@ -118,6 +127,7 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 <section id="v-after" hidden>
 <div class="logo">주문 후에<b>!</b></div>
 <p class="sub">어느 가게에 할 말 있음?</p>
+<div class="who gray" style="margin:0 0 10px">여기 남긴 기록은 가게가 아니라, 다음에 이 가게를 시킬 사람이 봅니다</div>
 <input id="qa" placeholder="가게 이름, 동, 도로명">
 <div id="aout"></div>
 </section>
@@ -130,6 +140,7 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 <section id="v-list" hidden>
 <div class="logo">내 기록</div>
 <p class="sub">이 폰에만 저장됩니다. 나만 보는 곳이라 마음껏 쓰세요</p>
+<div class="card" id="alout"></div>
 <div class="card" id="bdgout"></div>
 <div id="lout"></div>
 <div class="card"><b>기록 지키기</b>
@@ -162,8 +173,41 @@ try{const r=localStorage.getItem('sonjul.v1');if(r)S=Object.assign(S,JSON.parse(
 Object.keys(S.lists).forEach(k=>{if(S.lists[k]==='avoid')S.lists[k]='next'});
 const save=()=>{try{localStorage.setItem('sonjul.v1',JSON.stringify(S))}catch(e){}};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1900)};
-const TAGS=['옵션 장난','양 줄이기','가격 꼼수','누락','식어서 옴','늦은 배달','위생','불친절','리뷰이벤트 강요'];
-const OWN={'옵션 장난':'옵션 구성과 가격이 메뉴 설명과 달라 혼란스러웠습니다. 옵션 내용을 더 분명하게 표시해 주세요.','양 줄이기':'양이 가격에 비해 적다고 느꼈습니다. 구성 한번 점검 부탁드립니다.','가격 꼼수':'표시된 가격과 실제 결제 금액이 다르게 느껴졌습니다.','누락':'주문한 메뉴 일부가 빠져서 왔습니다. 포장 전에 한 번 더 확인 부탁드립니다.','식어서 옴':'음식이 식은 상태로 도착했습니다. 포장이나 출발 시간을 점검해 주세요.','늦은 배달':'안내된 시간보다 많이 늦게 도착했습니다.','위생':'위생이 걱정되는 부분이 있었습니다. 확인 부탁드립니다.','불친절':'응대 과정에서 불친절하다고 느꼈습니다.','리뷰이벤트 강요':'리뷰 이벤트 참여를 부담스럽게 요구받는 느낌이었습니다.'};
+const won=n=>Number(n).toLocaleString()+'원';
+const par=d=>{const v=Object.values(d||{}).filter(Boolean);return v.length?' ('+v.join(', ')+')':''};
+const pct=d=>d.base&&d.add?Math.round(d.add/d.base*100):0;
+/* 불만 템플릿: [묶음, 이름, 세부칸, 나만 보는 말, 사장님께, 공개용, 고객센터] */
+const TPL=[
+ ['음식','기성품 사용',[['p','what','무엇이',['냉동 튀김','공장 소스','레토르트','시판 반찬']],['p','why','그렇게 본 이유',['포장 자국','맛이 똑같음','봉지 동봉']]],
+  d=>`기성품 데워 보냄${d.what?' ('+d.what+')':''}, 개구림`,d=>`기성품${d.what?'('+d.what+')':''} 사용으로 보여 메뉴 설명과 차이가 있었습니다.`,d=>`기성품 사용으로 보였다는 기록${par(d)}`],
+ ['음식','양 속임',[['p','what','어떻게',['사진보다 적음','지난번보다 적음','고기, 건더기만 적음']],['p','how','대략',['반 정도','3분의 2 정도']]],
+  d=>`양 장난질${par(d)}`,d=>`받은 양이 기대보다 적었습니다${par(d)}. 구성 점검 부탁드립니다.`],
+ ['음식','사진과 다름',[['p','what','무엇이',['구성 다름','토핑 빠짐','크기 다름']]],null,d=>`받은 음식이 메뉴 사진과 달랐습니다${par(d)}.`],
+ ['음식','재료 바꿔치기',[['p','what','무엇이',['설명과 다른 부위','다른 재료','원산지 의심']]],null,d=>`메뉴 설명과 다른 재료가 쓰인 것 같습니다${par(d)}.`,d=>`설명과 다른 재료로 보였다는 기록${par(d)}`],
+ ['음식','덜 익음, 상함',[['p','what','상태',['덜 익음','쉰내','상한 재료']]],null,d=>`음식 상태에 문제가 있었습니다${par(d)}. 확인 부탁드립니다.`],
+ ['음식','이물질',[['p','what','무엇이',['머리카락','비닐','벌레','기타']]],d=>`이물질 나옴${par(d)}, 미쳤나`,d=>`음식에서 이물질이 나왔습니다${par(d)}. 위생 점검 부탁드립니다.`,null,null,'사진을 꼭 찍어 두세요. 보상받을 때 제일 중요합니다'],
+ ['가격','숨겨놓은 가격 옵션',[['n','base','메뉴판 가격'],['n','add','필수 옵션으로 붙은 돈'],['t','opt','옵션 이름 (예: 주문해주셔서 감사합니다)']],
+  d=>`숨겨놓은 가격 옵션으로 ${d.add?won(d.add):'돈'} 더 뜯김${d.opt?' ("'+d.opt+'")':''}`,
+  d=>`메뉴 가격과 별개로 필수 옵션${d.opt?' "'+d.opt+'"':''}에 추가 금액${d.add?' '+won(d.add):''}이 붙어 있었습니다. 가격을 메뉴에 바로 표시해 주세요.`,
+  d=>`숨겨놓은 가격 옵션 기록${d.add?' (+'+won(d.add)+(pct(d)?', '+pct(d)+'%':'')+')':''}`,
+  d=>`메뉴 가격${d.base?'('+won(d.base)+')':''}과 별개로 필수 옵션 명목의 추가 금액${d.add?' '+won(d.add):''}이 붙었습니다.`],
+ ['가격','배달팁 꼼수',[['p','what','어떻게',['표시보다 높음','거리 핑계 추가']]],null,d=>`배달팁이 안내와 다르게 느껴졌습니다${par(d)}.`],
+ ['가격','가격 꼼수',[],null,()=>'표시된 가격과 실제 결제 금액이 다르게 느껴졌습니다.'],
+ ['배달과 포장','누락',[['p','what','빠진 것',['음료','소스','반찬','수저']],['t','etc','그 밖에']],d=>`빼먹음${par(d)}`,d=>`주문한 메뉴 일부가 빠져서 왔습니다${par(d)}. 포장 전에 한 번 더 확인 부탁드립니다.`],
+ ['배달과 포장','포장 불량',[['p','what','어떻게',['국물 샘','뚜껑 열림','뒤섞임']]],null,d=>`포장 상태에 문제가 있었습니다${par(d)}.`],
+ ['배달과 포장','식어서 옴',[],null,()=>'음식이 식은 상태로 도착했습니다. 포장이나 출발 시간을 점검해 주세요.'],
+ ['배달과 포장','늦은 배달',[['p','late','얼마나 늦게',['20분','40분','1시간 이상']]],null,d=>`안내된 시간보다 늦게 도착했습니다${par(d)}.`],
+ ['응대','위생',[],null,()=>'위생이 걱정되는 부분이 있었습니다. 확인 부탁드립니다.'],
+ ['응대','불친절',[],null,()=>'응대 과정에서 불친절하다고 느꼈습니다.'],
+ ['응대','일방 취소',[],null,()=>'주문이 일방적으로 취소되었습니다.'],
+ ['응대','리뷰이벤트 강요',[],null,()=>'리뷰 이벤트 참여를 부담스럽게 요구받는 느낌이었습니다.'],
+ ['응대','리뷰 답글 막말',[],null,()=>'리뷰 답글의 표현이 지나치다고 느꼈습니다.']
+].map(([g,k,f,me,own,pub,cs,tip])=>({g,k,f,tip,me:me||(d=>k+par(d)),own,pub:pub||(d=>k+' 기록'+par(d)),cs:cs||own}));
+const TM={};TPL.forEach(t=>TM[t.k]=t);
+const ALIAS={'옵션 장난':'숨겨놓은 가격 옵션','양 줄이기':'양 속임'};
+const T=k=>TM[ALIAS[k]||k]||{k,me:()=>k,own:()=>'',pub:()=>k,cs:()=>''};
+const dk=(r,k)=>(r.det&&r.det[k])||{};
+const GROUPS=['음식','가격','배달과 포장','응대'];
 const LBL={c1:'조심',c2:'쓰레기',c3:'개쓰레기',fav:'또 시킴',next:'다음 주문에'};
 const MINE={c1:'내가 조심 딱지 붙인 가게',c2:'내가 쓰레기로 박제한 가게',c3:'내가 개쓰레기로 박제한 가게',fav:'또 시켜도 되는 가게',next:'다음에 시켜볼 가게'};
 const PUB={c1:'주의 1단계',c2:'주의 2단계',c3:'주의 3단계',fav:'추천',next:'관심 가게'};
@@ -198,6 +242,33 @@ const PREV={
  ex3:{bad:[{k:'주의 1단계',d:'2026-11-02',x:'안내된 시간보다 40분 정도 늦게 도착했습니다.',c:0,s:1}],
        good:[{k:'추천',d:'2026-11-20',x:'짬뽕 국물이 진하고 해물이 넉넉합니다. 포장 상태도 깔끔했습니다.',c:1,s:21},{k:'추천',d:'2026-11-08',x:'탕수육 소스를 따로 담아 줘서 눅눅하지 않았습니다.',c:1,s:9}]}};
 const TOWNX={ex4:14,ex5:6};
+const EXYEAR={ex1:2019,ex2:2024,ex3:2012,ex4:2026,ex5:2021};
+const GOVX={ex1:{viol:[['2025-08-12','과태료 30만원','조리장 위생 불량']]},ex3:{grade:'매우 우수',model:1}};
+const EXSTAT={ex1:{n:23,hid:[5,4000],tags:[['누락',7],['식어서 옴',4],['기성품 사용',3]]}};
+const STOPX={ex1:'필수 옵션으로 4,000원이 더 붙었다고 합니다. 치킨무가 자주 빠진다는 기록도 있어요'};
+function govBlock(id){
+  const x=BYID[id],m=String(id).match(/^\d+-\d+-(\d{4})-/),y=x.ex?EXYEAR[id]:m&&+m[1],now=new Date().getFullYear(),g=GOVX[id]||{};
+  const row=(t,v)=>`<li><b>${t}</b> ${v}</li>`,off='<span class="off">연결 준비 중</span>';
+  return `<div class="src gov"><div class="sh"><b>공공데이터</b><small>기관 공개 자료${x.ex?', 예시':''}</small></div><ul>
+  ${y?row('인허가',`${y}년${now-y>0?', 약 '+(now-y)+'년째 영업':', 올해 생긴 가게'}`):''}
+  ${row('위생 위반 행정처분',g.viol?g.viol.map(v=>`<br><span style="color:var(--red)">${esc(v[0])} ${esc(v[1])}, ${esc(v[2])}</span>`).join(''):x.ex?'없음':off)}
+  ${row('위생등급',g.grade?esc(g.grade):x.ex?'지정 안 됨':off)}
+  ${row('원산지 표시 위반',x.ex?'없음':off)}
+  ${row('모범음식점',g.model?'지정':x.ex?'지정 안 됨':off)}</ul>
+  <p class="hint">출처: 행정안전부 인허가 자료(2026-11 기준). 식약처 행정처분, 위생등급, 농관원 원산지 위반, 수원시 모범음식점은 연결 준비 중</p></div>`}
+function appBlock(id){
+  const rs=S.rates[id]||[],ex=EXSTAT[id];let n=rs.length,cnt={},adds=[];
+  rs.forEach(r=>(r.tags||[]).forEach(k=>{const kk=T(k).k;cnt[kk]=(cnt[kk]||0)+1;const a=dk(r,k).add;if(kk==='숨겨놓은 가격 옵션'&&a)adds.push(a)}));
+  let hid=cnt['숨겨놓은 가격 옵션']?[cnt['숨겨놓은 가격 옵션'],adds.length?Math.round(adds.reduce((a,b)=>a+b,0)/adds.length):0]:null,list=Object.entries(cnt).filter(([k])=>k!=='숨겨놓은 가격 옵션');
+  if(ex&&!n){n=ex.n;hid=ex.hid;list=ex.tags}
+  if(!n)return '';
+  return `<div class="src app"><div class="sh"><b>주문 전에 기록</b><small>${ex&&!rs.length?'사용자 기록 '+n+'건 기준, 예시':'지금은 내 기록 '+n+'건 기준'}</small></div>
+  ${hid?`<div class="wr">숨겨놓은 가격 옵션 기록 있음${hid[1]?' (평균 +'+won(hid[1])+')':''}${hid[0]>1?', '+hid[0]+'건':''}</div>`:''}
+  ${list.length?`<div style="margin-top:4px">${list.map(([k,c])=>esc(k)+' '+c).join(', ')}</div>`:''}
+  <p class="hint">이 앱 사용자들이 남긴 기록을 모은 통계입니다. 기관 자료가 아닙니다</p></div>`}
+const WOPT=[['quiet','조용히 확인만'],['open','말려 줄 사람 있으면 들을래요'],['all','전부 직접 읽을래요']];
+const WDESC={quiet:'알림 없이 공공데이터, 내 기록, 후기 요약만 봅니다',open:'이 가게를 기록한 사람에게 알림이 가고, 말리는 한마디를 받을 수 있어요. 상대에게는 "누군가 이 가게를 보고 있음"만 전달됩니다. 누구인지, 어떤 기록이 있는지는 안 보여요',all:'알림 없이 공개 후기와 이력을 전부 펼쳐서 봅니다'};
+function renderWatch(){const w=S.watch||'quiet';$('#watchbox').innerHTML=`<b>가게 볼 때</b><span class="soon">알림은 3단계 준비 중</span><div class="chips" style="margin-top:8px">${WOPT.map(([v,l])=>`<button class="chip ${w===v?'on':''}" data-watch="${v}">${l}</button>`).join('')}</div><p class="hint">${WDESC[w]}</p>`}
 function seedEx(){if(S.exSeeded)return;S.exSeeded=1;
  S.rates.ex1=[{d:'2026-11-20',taste:1,qty:1,deliv:2,svc:0,tags:['누락','식어서 옴'],memo:'치킨무 누락, 반은 식어서 옴',rant:'진짜 개빡치네. 다시는 안 시킴'}];S.lists.ex1='c2';
  S.rates.ex3=[{d:'2026-11-18',taste:3,qty:3,deliv:3,svc:3,tags:[],memo:'짬뽕 국물 진함. 양 넉넉',rant:''}];S.lists.ex3='fav';
@@ -253,8 +324,9 @@ function pubBlock(id){
   return `<div class="pub" data-pub="${esc(id)}"><b>다른 사람들 후기</b><span class="ex">예시</span><span class="soon">3단계 준비 중</span>
   <div class="bar"><span class="bd" style="flex:${b||.01}">불만 ${b}</span><span class="gd" style="flex:${g||.01}">추천 ${g}</span></div>
   <div class="tops">${b?one(sb(p.bad)[0],'bd'):'<div class="rv">불만 후기 없음</div>'}${g?one(sb(p.good)[0],'gd'):'<div class="rv">추천 후기 없음</div>'}</div>
+  <details ${S.watch==='all'?'open':''}><summary>후기 전부 읽기</summary>
   <div class="ptabs"><button class="on" data-pt="bad">불만 전체 ${b}</button><button data-pt="good">추천 전체 ${g}</button></div>
-  <div class="rvlist">${sb(p.bad).map(r=>one(r,'bd')).join('')}</div></div>`;
+  <div class="rvlist">${sb(p.bad).map(r=>one(r,'bd')).join('')}</div></details></div>`;
 }
 
 function storeCard(id,from,mode){
@@ -266,11 +338,13 @@ function storeCard(id,from,mode){
   const fromTxt=from?relBox(from,x):'';
   const sameTxt=(su.length?`<div class="who red"><b>같은 자리(${esc(x._u)})에 등록된 가게 ${su.length}곳.</b> 같은 주방일 가능성이 높습니다<ul>${li(su)}</ul></div>`:'')
    +(sb.length?`<details class="who gray"><summary>같은 건물 음식점 ${sb.length}곳</summary><ul>${li(sb)}</ul></details>`:'');
-  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)}, 맛 ${r.taste}, 양과 가격 ${r.qty}, 배달 ${r.deliv}${r.svc?', 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.join(', '))+'</b>':''}${r.memo?'<br>'+esc(r.memo):''}${r.rant?'<br><small>화풀이: '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
+  const hist=rs.length?`<div class="hist">${rs.slice().reverse().map(r=>`<div>${esc(r.d)}, 맛 ${r.taste}, 양과 가격 ${r.qty}, 배달 ${r.deliv}${r.svc?', 응대 '+r.svc:''}${r.tags&&r.tags.length?'<br><b>'+esc(r.tags.map(k=>T(k).me(dk(r,k))).join(', '))+'</b>':''}${r.memo?'<br>'+esc(r.memo):''}${r.rant?'<br><small>화풀이: '+esc(r.rant)+'</small>':''}${r.photos&&r.photos.length?`<div class="phs">${r.photos.map(q=>`<img data-pk="${esc(q.k)}" alt="${q.kind==='proof'?'주문내역':'음식'} 사진">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
   const openForm=mode==='after'&&!rs.length;
   return `<article class="card" data-card="${esc(id)}" data-from="${esc(from||'')}" data-mode="${mode||''}">${st?`<span class="stamp ${st}">${LBL[st]}</span>`:''}
   <div class="meta">${esc(x.t)}${x.ex?'<span class="ex">예시</span>':''}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>
   ${st?`<p style="margin:10px 0 0;font-weight:700">${MINE[st]}</p>`:''}
+  ${S.watch==='open'&&STOPX[id]?`<div class="who red"><b>이 가게를 직접 시켜 본 사람이 말리고 있어요</b><span class="ex">예시</span><br>${esc(STOPX[id])}</div>`:''}
+  ${appBlock(id)}${govBlock(id)}
   ${fromTxt}${sameTxt}${hist}
   <div class="dash"></div>
   <div class="row"><button class="btn" data-act="rate">${rs.length?'또 기록하기':'먹고 나서 평가하기'}</button><button class="btn ghost" data-act="next">${st==='next'?'다음 주문에서 빼기':'다음 주문에 담기'}</button>${st&&st!=='next'?'<button class="btn ghost" data-act="clear">딱지 떼기</button>':''}</div>
@@ -281,10 +355,12 @@ function storeCard(id,from,mode){
 function rateForm(){
   const seg=(k,t,v)=>`<div class="rate"><span>${t}</span><div class="seg" data-k="${k}">${v.map(([n,l])=>`<button type="button" data-v="${n}">${l}</button>`).join('')}</div></div>`;
   const three=[[1,'1 완전 구림'],[2,'2 그럭저럭'],[3,'3 또 시킴']];
-  return `<div class="dash"></div>
+  const det=t=>`<div class="det" data-det="${t.k}" hidden><b>${t.k}</b>${t.f.map(([ty,id,l,o])=>ty==='p'?`<span class="dl">${l}</span><div class="chips">${o.map(v=>`<button type="button" class="chip sm" data-dp="${id}" data-dv="${v}">${v}</button>`).join('')}</div>`:`<label class="dl">${l}</label><input ${ty==='n'?'inputmode="numeric" data-dn':'data-dt'}="${id}" placeholder="${ty==='n'?'숫자만':''}">`).join('')}${t.k==='숨겨놓은 가격 옵션'?'<p class="calc"></p>':''}${t.tip?`<p class="hint">${t.tip}</p>`:''}</div>`;
+  return `<div class="dash"></div><p class="hint" style="margin:0 0 6px">여기 남긴 기록은 가게가 아니라, 다음에 이 가게를 시킬 사람이 봅니다</p>
   ${seg('taste','맛',three)}${seg('qty','양과 가격',three)}${seg('deliv','배달 상태',three)}
   ${seg('svc','응대 (선택)',[[0,'연락 없음'],[1,'1'],[2,'2'],[3,'3']])}
-  <div class="tagbox" hidden><label class="l">뭐가 빡쳤음? (여러 개 가능)</label><div class="chips">${TAGS.map(t=>`<button type="button" class="chip" data-tag="${t}">${t}</button>`).join('')}</div></div>
+  <div class="tagbox"><label class="l">뭐가 빡쳤음? (여러 개 가능, 없으면 넘어가기)</label>${GROUPS.map(g=>`<div class="tg"><small>${g}</small><div class="chips">${TPL.filter(t=>t.g===g).map(t=>`<button type="button" class="chip" data-tag="${t.k}">${t.k}</button>`).join('')}</div></div>`).join('')}
+  ${TPL.filter(t=>t.f.length||t.tip).map(det).join('')}</div>
   <label class="l">메모</label><input data-f="memo" placeholder="무슨 일이 있었는지 짧게">
   <label class="l">화풀이 칸 (나만 봄, 욕해도 됨)</label><textarea data-f="rant" placeholder="여긴 아무도 못 봅니다. 시원하게 쓰세요"></textarea>
   <label class="l">증거 사진 (각 5장까지)</label><div class="row" style="margin-top:0"><label class="btn ghost phbtn">음식 사진<input type="file" accept="image/*" multiple data-ph="food" hidden></label><label class="btn ghost phbtn">주문내역 캡처<input type="file" accept="image/*" multiple data-ph="proof" hidden></label></div>
@@ -294,10 +370,11 @@ function rateForm(){
 
 function nextSteps(card,id){
   const st=S.lists[id],low=/^c/.test(st||'');const lr=(S.rates[id]||[]).slice(-1)[0]||{};const np=(lr.photos||[]).filter(q=>q.kind==='food').length;
-  card.querySelector('.rbox').innerHTML=`<div class="dash"></div><b>${low?'다음 할 일':'좋은 집은 알려야죠'}</b><div class="next">
-  ${low?'<button class="btn red big" data-act="cs">보상 요청하기 (고객센터)'+(np?', 사진 '+np+'장 함께':'')+'</button><button class="btn big" data-act="owner">사장님께 한마디</button><button class="btn ghost big" data-act="tell">친구에게 알리기</button>':'<button class="btn big" data-act="tell">친구에게 추천하기</button>'}
-  <button class="btn ghost big" data-act="public">모두에게 공개하기<span class="soon">3단계 준비 중</span></button></div>
-  ${low?'<p class="hint">보상은 시간이 지나면 어려워집니다. 고객센터부터 먼저 하세요</p>':''}`;
+  card.querySelector('.rbox').innerHTML=`<div class="dash"></div><b>${low?'다음 사람 구하기':'좋은 집은 알려야죠'}</b><div class="next">
+  <button class="btn red big" data-act="public">${low?'다음 사람에게 남기기':'다음 사람에게 추천 남기기'}<span class="soon">3단계 준비 중</span></button></div>
+  <div class="dash"></div><b style="font-size:14px">덤으로 쓸 수 있는 것</b>
+  <div class="row">${low?'<button class="btn ghost" data-act="cs">고객센터 보상 요청'+(np?', 사진 '+np+'장':'')+'</button><button class="btn ghost" data-act="owner">사장님께</button>':''}<button class="btn ghost" data-act="tell">친구에게</button></div>
+  ${low?'<p class="hint">보상은 시간이 지나면 어려워집니다. 받을 생각이면 고객센터부터 하세요</p>':''}`;
 }
 
 function show_store(id,from,mode){S.recent=[id].concat((S.recent||[]).filter(i=>i!==id)).slice(0,20);save();const el=$('#sout');el.innerHTML=storeCard(id,from,mode);if(VIEW!=='store')show('store');else scrollTo(0,0)}
@@ -314,7 +391,7 @@ function doShare(t){
   showCands(list,url,name);
 }
 function choose(id,from){const x=BYID[id],st=S.lists[id],n=(S.rates[id]||[]).length;
-  $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유${x.ex?'<span class="ex">예시</span>':''}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>${from?relBox(from,x):''}</div>
+  $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유${x.ex?'<span class="ex">예시</span>':''}</div><h2>${esc(x.n)}</h2><div class="meta">${esc(x.a)}</div>${from?relBox(from,x):''}${appBlock(id)}</div>
   <div class="split"><button class="half w" data-pick="before" data-id="${esc(id)}" data-from="${esc(from||'')}"><span><big>주문 전에</big><small>${st?'<b style="color:var(--red)">'+LBL[st]+' 딱지 있음</b><br>':''}${n?'내 기록 '+n+'개':'내 기록 없음'}<br>같은 주방, 후기 확인</small></span><span class="go">확인하기 →</span></button>
   <button class="half r" data-pick="after" data-id="${esc(id)}" data-from="${esc(from||'')}"><span><big>주문 후에</big><small>먹어 봤으면<br>바로 평가</small></span><span class="go">기록하기 →</span></button></div>
   <div class="row"><button class="btn ghost" data-act="wrong">이 가게가 아니에요</button></div>`;
@@ -330,7 +407,7 @@ function showCands(list,url,name){
   if(VIEW!=='store')show('store');
 }
 
-function renderBefore(){
+function renderBefore(){renderWatch();
   const q=$('#qb').value.trim();
   $('#bout').innerHTML=q?`<div class="card">${candList(find(q,20),'')}</div>`:'';
   const g=k=>Object.entries(S.lists).filter(([i,v])=>v===k&&BYID[i]).map(([i])=>i);
@@ -352,6 +429,8 @@ function renderList(){
   const sec=(k,title,desc)=>`<div class="sect">${title} <i>${groups[k].length}곳, ${desc}</i></div>${groups[k].length?groups[k].map(id=>{const x=BYID[id];const r=(S.rates[id]||[]).slice(-1)[0];return `<div class="cand" data-id="${esc(id)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${r?esc(r.d)+(r.memo?', '+esc(r.memo):''):esc(bld(x.a))}</small></span><span class="pick">열기</span></div>`}).join(''):'<p class="empty">아직 없어요</p>'}`;
   const nce=Object.keys(S.links).filter(k=>k.startsWith('ce:')).length,nr=Object.keys(S.rates).filter(i=>!BYID[i]||!BYID[i].ex).length;
   const bd=(on,m,t,d)=>`<div class="bdg${on?' on':''}"><span class="m">${m}</span><span><b>${t}</b><small>${d}</small></span></div>`;
+  const fl=['ex1'].concat(Object.keys(S.lists)).find(i=>/^c/.test(S.lists[i]||'')&&BYID[i]);
+  $('#alout').hidden=!fl;if(fl)$('#alout').innerHTML=`<b>알림</b><span class="ex">예시</span><span class="soon">3단계 준비 중</span><p style="margin:6px 0 0">내가 ${LBL[S.lists[fl]]} 딱지 붙인 <b>${esc(BYID[fl].n)}</b>, 지금 누가 보고 있음</p><div class="row"><button class="btn red" data-stop="${esc(fl)}">뜯어말리기</button></div><div class="stopout"></div><p class="hint">상대가 누구인지는 알 수 없습니다. 상대가 말려 달라고 허용한 경우에만 알림이 옵니다. 보내는 말은 존댓말로 정리되어 전달됩니다</p>`;
   $('#bdgout').innerHTML=`<b>내 뱃지</b><span class="ex">예시</span><span class="soon">2단계 준비 중</span>
   ${bd(nce>0,'기미','기미상궁',`쿠팡이츠 가게를 처음 연결한 사람. 내가 연결한 가게 ${nce}곳`)}
   ${bd(nr>=10,'장부','장부 쓰는 손님',`가게 10곳 기록하기. 지금 ${nr}곳`)}
@@ -405,20 +484,23 @@ document.addEventListener('click',e=>{
     if(key){S.links[key]=id;save();toast(key.startsWith('ce:')?'최초 등록 완료, 포인트는 2단계에서 지급':'연결 저장, 다음 공유부터 바로 떠요');choose(id,LAST&&LAST.name||'');return}
     const mode=VIEW==='after'?'after':key?((S.rates[id]||[]).length||S.lists[id]?'before':'after'):'before';
     show_store(id,from,mode);return}
-  const chp=e.target.closest('.chip[data-tag]');if(chp){chp.classList.toggle('on');return}
-  const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));const card=sb.closest('[data-card]');const low=[...card.querySelectorAll('.seg[data-k=taste] .on,.seg[data-k=qty] .on,.seg[data-k=deliv] .on')].some(b=>b.dataset.v==='1');card.querySelector('.tagbox').hidden=!low;return}
+  const chp=e.target.closest('.chip[data-tag]');if(chp){chp.classList.toggle('on');const dp=chp.closest('[data-card]').querySelector(`[data-det="${CSS.escape(chp.dataset.tag)}"]`);if(dp)dp.hidden=!chp.classList.contains('on');return}
+  const dpc=e.target.closest('.chip[data-dp]');if(dpc){dpc.classList.toggle('on');return}
+  const wt=e.target.closest('[data-watch]');if(wt){S.watch=wt.dataset.watch;save();renderWatch();return}
+  const stp=e.target.closest('[data-stop]');if(stp){const id=stp.dataset.stop,r=(S.rates[id]||[]).slice(-1)[0];const msg=r&&r.tags&&r.tags.length?r.tags.map(k=>T(k).pub(dk(r,k))).join(', '):'이 가게에서 불편을 겪었다는 기록이 있습니다';$('#alout .stopout').innerHTML=`<div class="who"><b>상대 화면에 이렇게 보입니다</b><br>이 가게를 직접 시켜 본 사람이 말리고 있어요: ${esc(msg)}</div>`;toast('3단계에서 실제로 전달됩니다');return}
+  const sb=e.target.closest('.seg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
   const ab=e.target.closest('[data-act]');if(!ab)return;
   const card=ab.closest('[data-card]');const id=card&&card.dataset.card;const act=ab.dataset.act;
   if(act==='wrong'&&!LAST)return;
   if(act==='wrong'&&LAST){if(LAST.url)delete S.links[LAST.url];save();showCands(LAST.list.filter(x=>x._n!==norm(LAST.name)),LAST.url,LAST.name);return}
   if(act==='public'){const rs=S.rates[id]||[],r=rs[rs.length-1],st=S.lists[id];const x=BYID[id];
-    const t=`[${PUB[st]||'후기'}] ${x.n}\n맛 ${r.taste}/3, 양과 가격 ${r.qty}/3, 배달 ${r.deliv}/3`+(r.tags&&r.tags.length?`\n${r.tags.map(k=>OWN[k]).join(' ')}`:'');
+    const t=`[${PUB[st]||'후기'}] ${x.n}\n맛 ${r.taste}/3, 양과 가격 ${r.qty}/3, 배달 ${r.deliv}/3`+(r.tags&&r.tags.length?`\n${r.tags.map(k=>T(k).pub(dk(r,k))).join(', ')}`:'');
     card.querySelector('.rbox').insertAdjacentHTML('beforeend',`<div class="pub"><b>공개될 글 미리보기</b><span class="soon">3단계 준비 중</span><p class="hint">화풀이와 메모는 공개되지 않고, 아래처럼 존댓말로 정리됩니다. 공개하려면 주문내역 인증이 필요합니다</p><div class="rv" style="margin-top:8px"><div class="h"><span class="k bd">${esc(PUB[st]||'후기')}</span><span>${(r.photos||[]).some(q=>q.kind==='proof')?'주문 인증':'미인증'}</span></div><div style="white-space:pre-line;margin-top:4px">${esc(t)}</div>${(r.photos||[]).some(q=>q.kind==='food')?`<div class="phs">${r.photos.filter(q=>q.kind==='food').map(q=>`<img data-pk="${esc(q.k)}" alt="공개될 음식 사진">`).join('')}</div>`:''}</div></div>`);ab.remove();return}
   if(['tell','owner','cs'].includes(act)){
     const x=BYID[id],rs=S.rates[id]||[],r=rs[rs.length-1];if(!r)return;const tg=r.tags||[];let t='',ttl='';const P=appOf(id);
-    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}, 맛 ${r.taste} / 양과 가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.join(', ')}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
-    if(act==='owner'){ttl=P==='쿠팡이츠'?'사장님께 (쿠팡이츠 리뷰에 붙여넣기)':`사장님께 (${P} 리뷰나 사장님 메시지에 붙여넣기)`;t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>OWN[k]).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+`\n개선되면 다시 주문해 보겠습니다.`}
-    if(act==='cs'){ttl=`${P} 고객센터에 보낼 내용`;t=`${r.d} ${x.n} 주문 건 문의드립니다.\n문제: ${tg.length?tg.join(', '):'음식 상태'}\n사진 첨부합니다. 환불 또는 재배달 처리 부탁드립니다.`}
+    if(act==='tell'){ttl='친구에게 보낼 내용';t=`${x.n} (${bld(x.a)})\n내 평가: ${PUB[S.lists[id]]||'기록만'}, 맛 ${r.taste} / 양과 가격 ${r.qty} / 배달 ${r.deliv}`+(tg.length?`\n이유: ${tg.map(k=>T(k).pub(dk(r,k))).join(', ')}`:'')+`\n\n주문 전에 https://www.morulabs.co.kr/order/`}
+    if(act==='owner'){ttl=P==='쿠팡이츠'?'사장님께 (쿠팡이츠 리뷰에 붙여넣기)':`사장님께 (${P} 리뷰나 사장님 메시지에 붙여넣기)`;t=`사장님, ${r.d}에 주문한 손님입니다.\n`+(tg.length?tg.map(k=>T(k).own(dk(r,k))).filter(Boolean).join('\n'):'아쉬운 점이 있어 말씀드립니다.')+`\n개선되면 다시 주문해 보겠습니다.`}
+    if(act==='cs'){ttl=`${P} 고객센터에 보낼 내용`;t=`${r.d} ${x.n} 주문 건 문의드립니다.\n${tg.length?tg.map(k=>T(k).cs(dk(r,k))).filter(Boolean).join('\n'):'음식 상태에 문제가 있었습니다.'}\n${r.photos&&r.photos.length?'사진 첨부합니다. ':''}환불 또는 재배달 처리 부탁드립니다.`}
     card.querySelector('.rbox').innerHTML=`<div class="dash"></div><label class="l">${ttl}</label><textarea data-f="gen">${esc(t)}</textarea><div class="row"><button class="btn" data-act="copy">복사</button>${act==='tell'?'<button class="btn red" data-act="send">보내기</button>':''}${act==='cs'&&r.photos&&r.photos.length?'<button class="btn red" data-act="sendph">사진과 함께 보내기</button>':''}</div><p class="hint">메모와 화풀이는 들어가지 않습니다. 필요하면 직접 덧붙이세요</p>`;
     return}
   if(act==='copy'||act==='send'){
@@ -434,7 +516,8 @@ document.addEventListener('click',e=>{
   if(act==='clear'){delete S.lists[id];save();rerenderCard(card);return}
   if(act==='saverate'){
     const v=k=>{const b=card.querySelector(`.seg[data-k=${k}] .on`);return b?+b.dataset.v:null};
-    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:card.querySelector('.tagbox').hidden?[]:[...card.querySelectorAll('.chip.on')].map(b=>b.dataset.tag)};
+    const r={d:new Date().toISOString().slice(0,10),taste:v('taste'),qty:v('qty'),deliv:v('deliv'),svc:v('svc')||0,memo:card.querySelector('[data-f=memo]').value.trim(),rant:card.querySelector('[data-f=rant]').value.trim(),tags:[...card.querySelectorAll('.chip.on[data-tag]')].map(b=>b.dataset.tag)};
+    r.det={};r.tags.forEach(k=>{const pn=card.querySelector(`[data-det="${CSS.escape(k)}"]`);if(!pn)return;const o={};pn.querySelectorAll('.chip.on[data-dp]').forEach(b=>{o[b.dataset.dp]=(o[b.dataset.dp]?o[b.dataset.dp]+', ':'')+b.dataset.dv});pn.querySelectorAll('[data-dn]').forEach(i=>{const n=+i.value.replace(/\D/g,'');if(n)o[i.dataset.dn]=n});pn.querySelectorAll('[data-dt]').forEach(i=>{if(i.value.trim())o[i.dataset.dt]=i.value.trim()});if(Object.keys(o).length)r.det[k]=o});if(!Object.keys(r.det).length)delete r.det;
     if(!r.taste||!r.qty||!r.deliv){toast('맛, 양과 가격, 배달 상태는 꼭 골라 주세요');return}
     if(/씨발|시발|존나|좆|병신|개새|ㅅㅂ|ㅂㅅ/.test(r.memo)){toast('메모엔 욕 빼고, 화풀이 칸에 쓰세요');return}
     const pend=card._ph||{food:[],proof:[]};
@@ -450,7 +533,7 @@ document.addEventListener('click',e=>{
   }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('cand'))e.target.click()});
-document.addEventListener('input',e=>{if(e.target.id==='cq'){clearTimeout(e.target._t);e.target._t=setTimeout(()=>{const q=e.target.value.trim();$('#cqout').innerHTML=q?candList(find(q,12),e.target.dataset.key):''},200)}
+document.addEventListener('input',e=>{if(e.target.matches('[data-dn]')){const pn=e.target.closest('.det'),c=pn&&pn.querySelector('.calc');if(c){const g=k=>+((pn.querySelector(`[data-dn=${k}]`)||{}).value||'').replace(/\D/g,'');const b=g('base'),a=g('add');c.textContent=a?`${b?won(b)+'짜리가 '+won(b+a)+', ':''}${won(a)}${b?' ('+Math.round(a/b*100)+'%)':''} 더 냄`:''}}if(e.target.id==='cq'){clearTimeout(e.target._t);e.target._t=setTimeout(()=>{const q=e.target.value.trim();$('#cqout').innerHTML=q?candList(find(q,12),e.target.dataset.key):''},200)}
   if(e.target.id==='qb'){clearTimeout(e.target._t);e.target._t=setTimeout(renderBefore,200)}
   if(e.target.id==='qa'){clearTimeout(e.target._t);e.target._t=setTimeout(renderAfter,200)}});
 $('#go').onclick=()=>doShare($('#paste').value);$('#clr').onclick=()=>{$('#paste').value=''};
