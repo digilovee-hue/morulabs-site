@@ -85,6 +85,9 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 .dots{display:flex;gap:6px;justify-content:center;margin:14px 0}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--red)}
 .who.red{background:#ffd3cb;color:#7a1d10}.who.gray{background:#fff;border:1px solid var(--line)}.who summary{color:var(--sub);font-size:13px}
 .regs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.bdg{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.bdg:last-child{border:0}
+.bdg .m{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:400 15px/1 "Black Han Sans","Noto Sans KR";background:var(--line);color:var(--mute)}.bdg.on .m{background:var(--red);color:#fff}
+.bdg b{display:block}.bdg small{color:var(--mute);font-size:12px}
 .rank{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.rank .n{font:400 26px "Black Han Sans";width:28px;color:var(--blue)}
 </style></head><body>
 <div class="wrap">
@@ -127,6 +130,7 @@ nav.bot button.on{color:var(--ink);font-weight:900}
 <section id="v-list" hidden>
 <div class="logo">내 기록</div>
 <p class="sub">이 폰에만 저장됩니다. 나만 보는 곳이라 마음껏 쓰세요</p>
+<div class="card" id="bdgout"></div>
 <div id="lout"></div>
 <div class="card"><b>기록 지키기</b>
 <p class="hint" style="margin-top:4px">브라우저 데이터를 지우면 기록도 사라집니다. 가끔 파일로 저장해 두세요</p>
@@ -320,6 +324,7 @@ function showCands(list,url,name){
   $('#sout').innerHTML=`<div class="card"><div class="meta">${SRC} 공유</div><h2>처음 보는 가게입니다</h2>
   ${name&&list[0]&&dice(core(name)||norm(name),list[0]._c||list[0]._n)>=.5?`<div class="who">${SRC} 표시 이름 <b>${esc(name)}</b><br>가장 비슷한 등록 상호 <b>${esc(list[0].n)}</b><br><small>${esc(list[0].a)}</small></div>`:''}
   ${name?'':'<p class="meta">링크에 가게 이름이 없어요. 한 번만 찾아 주시면 다음부터 바로 연결됩니다</p>'}
+  ${String(url).startsWith('ce:')?`<div class="who"><b>아직 아무도 연결 안 한 가게</b><span class="soon">2단계 준비 중</span><br>처음 연결하면 최초 등록 포인트와 <b>기미상궁</b> 뱃지를 드려요. 그다음부터는 누가 공유하든 이 가게가 바로 열립니다<br><small>잘못 연결하면 다음 사람이 바로잡고, 포인트는 회수됩니다</small></div>`:''}
   ${list.length?`<div class="dash"></div><b style="font-size:15px">실제 가게가 어디인가요?</b>${candList(list,key)}${HOWNAME}`:HOWNAME}
   <div class="dash"></div><label class="l" for="cq">${list.length?'목록에 없으면 직접 찾기':'가게 찾기'}</label><input id="cq" data-key="${esc(key)}" placeholder="가게 이름, 동, 도로명"><div id="cqout"></div></div>`;
   if(VIEW!=='store')show('store');
@@ -345,6 +350,12 @@ function renderList(){
   const groups={c3:[],c2:[],c1:[],fav:[],next:[]};
   Object.entries(S.lists).forEach(([id,k])=>{if(BYID[id]&&groups[k])groups[k].push(id)});
   const sec=(k,title,desc)=>`<div class="sect">${title} <i>${groups[k].length}곳, ${desc}</i></div>${groups[k].length?groups[k].map(id=>{const x=BYID[id];const r=(S.rates[id]||[]).slice(-1)[0];return `<div class="cand" data-id="${esc(id)}" data-key="" tabindex="0"><span><b>${esc(x.n)}${x.ex?'<span class="ex">예시</span>':''}</b><small>${r?esc(r.d)+(r.memo?', '+esc(r.memo):''):esc(bld(x.a))}</small></span><span class="pick">열기</span></div>`}).join(''):'<p class="empty">아직 없어요</p>'}`;
+  const nce=Object.keys(S.links).filter(k=>k.startsWith('ce:')).length,nr=Object.keys(S.rates).filter(i=>!BYID[i]||!BYID[i].ex).length;
+  const bd=(on,m,t,d)=>`<div class="bdg${on?' on':''}"><span class="m">${m}</span><span><b>${t}</b><small>${d}</small></span></div>`;
+  $('#bdgout').innerHTML=`<b>내 뱃지</b><span class="ex">예시</span><span class="soon">2단계 준비 중</span>
+  ${bd(nce>0,'기미','기미상궁',`쿠팡이츠 가게를 처음 연결한 사람. 내가 연결한 가게 ${nce}곳`)}
+  ${bd(nr>=10,'장부','장부 쓰는 손님',`가게 10곳 기록하기. 지금 ${nr}곳`)}
+  <p class="hint">포인트와 뱃지는 로그인 후 서버에 쌓입니다. 지금은 이 폰 기록으로 미리 보여 드려요</p>`;
   $('#lout').innerHTML=sec('c3','개쓰레기','세 항목 모두 1점')+sec('c2','쓰레기','1점 두 개')+sec('c1','조심','1점 한 개')+sec('fav','또 시킴','세 항목 모두 3점')+sec('next','다음 주문에','다음에 시켜볼 가게');
 }
 function renderTown(){const t=EXS.map(x=>({id:x.id,n:PREV[x.id]?PREV[x.id].bad.length+PREV[x.id].good.length:(TOWNX[x.id]||0)})).filter(r=>r.n).sort((a,b)=>b.n-a.n);
@@ -391,7 +402,7 @@ document.addEventListener('click',e=>{
     v.onclick=async ev=>{const b=ev.target.closest('[data-vx]');if(!b&&ev.target!==v)return;if(b&&b.dataset.vx==='del'){await idb.del(k);Object.values(S.rates).forEach(rs=>rs.forEach(r=>{if(r.photos){r.photos=r.photos.filter(q=>q.k!==k);if(!r.photos.length)delete r.photos}}));save();im.remove();toast('사진을 삭제했습니다')}v.remove()};return}
   const cd=e.target.closest('.cand');
   if(cd){const id=cd.dataset.id,key=cd.dataset.key;let from='';
-    if(key){S.links[key]=id;save();toast('연결 저장, 다음 공유부터 바로 떠요');choose(id,LAST&&LAST.name||'');return}
+    if(key){S.links[key]=id;save();toast(key.startsWith('ce:')?'최초 등록 완료, 포인트는 2단계에서 지급':'연결 저장, 다음 공유부터 바로 떠요');choose(id,LAST&&LAST.name||'');return}
     const mode=VIEW==='after'?'after':key?((S.rates[id]||[]).length||S.lists[id]?'before':'after'):'before';
     show_store(id,from,mode);return}
   const chp=e.target.closest('.chip[data-tag]');if(chp){chp.classList.toggle('on');return}
